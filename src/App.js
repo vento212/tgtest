@@ -227,7 +227,7 @@ export default function App() {
 
       {/* Top Bar */}
       <div className="w-full max-w-md flex items-center justify-between bg-telegram-gray rounded-2xl px-4 py-2 mb-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-1">
           <div className="flex items-center bg-telegram-dark rounded-full px-3 py-1 text-sm font-semibold">
             <CurrencyDollarIcon className="w-5 h-5 text-telegram-blue mr-1" />
             <span>{balance.toFixed(2)} TON</span>
@@ -248,22 +248,24 @@ export default function App() {
             <MinusIcon className="w-6 h-6" />
           </button>
           {isConnected && walletAddress && (
-            <div className="text-xs text-gray-400 truncate max-w-[120px]">
+            <div className="text-xs text-gray-400 truncate max-w-[120px] ml-2">
               {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
             </div>
           )}
         </div>
-        <img
-          src={tgUser?.photo_url || avatarUrl}
-          alt="avatar"
-          className="w-8 h-8 rounded-full object-cover border-2 border-telegram-blue"
-        />
-        <button 
-          onClick={() => tonConnectUI.openModal()}
-          className="bg-telegram-blue hover:bg-telegram-btn-dark text-white font-semibold rounded-full px-4 py-2 ml-2 transition-colors"
-        >
-          {isConnected ? 'Connected' : 'Connect Wallet'}
-        </button>
+        <div className="flex items-center gap-2">
+          <img
+            src={tgUser?.photo_url || avatarUrl}
+            alt="avatar"
+            className="w-8 h-8 rounded-full object-cover border-2 border-telegram-blue"
+          />
+          <button 
+            onClick={() => tonConnectUI.openModal()}
+            className="bg-telegram-blue hover:bg-telegram-btn-dark text-white font-semibold rounded-full px-4 py-2 transition-colors"
+          >
+            {isConnected ? 'Connected' : 'Connect Wallet'}
+          </button>
+        </div>
       </div>
 
       {/* NFT Card */}
