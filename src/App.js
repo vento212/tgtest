@@ -6,7 +6,6 @@ import { getBalance, sendTransaction } from './ton-connect';
 import './App.css';
 
 const avatarUrl = 'https://i.imgur.com/8Km9tLL.png'; // Заглушка для аватара
-const nftImg = 'https://via.placeholder.com/400x400/8f5be8/ffffff?text=NFT'; // Заглушка для NFT
 
 // Получаем данные пользователя Telegram, если приложение открыто как WebApp
 const tgUser = window?.Telegram?.WebApp?.initDataUnsafe?.user;
