@@ -263,7 +263,7 @@ export default function App() {
             onClick={() => tonConnectUI.openModal()}
             className="bg-telegram-blue hover:bg-telegram-btn-dark text-white font-semibold rounded-full px-4 py-2 transition-colors"
           >
-            {isConnected ? 'Connected' : 'Connect Wallet'}
+            {isConnected ? 'Connected!' : 'Connect Wallet!'}
           </button>
         </div>
       </div>
