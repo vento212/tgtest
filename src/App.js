@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GiftIcon, ShoppingCartIcon, UserCircleIcon, CurrencyDollarIcon, ViewColumnsIcon, ChartBarIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { GiftIcon, ShoppingCartIcon, UserCircleIcon, CurrencyDollarIcon, ViewColumnsIcon, ChartBarIcon, XMarkIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/outline';
 import MarketIcon from './icons/Market.png';
 import { useTonConnectUI, useTonWallet } from '@tonconnect/ui-react';
 import { getBalance, sendTransaction } from './ton-connect';
@@ -22,6 +22,9 @@ export default function App() {
   const [walletAddress, setWalletAddress] = useState('');
   const [showGiftModal, setShowGiftModal] = useState(false);
   const [giftRecipient, setGiftRecipient] = useState('');
+  const [showDepositModal, setShowDepositModal] = useState(false);
+  const [showWithdrawModal, setShowWithdrawModal] = useState(false);
+  const [depositAmount, setDepositAmount] = useState('');
 
   // Подписываемся на изменения состояния кошелька
   useEffect(() => {
@@ -116,6 +119,67 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-telegram-dark flex flex-col items-center py-4">
+      {/* Deposit Modal */}
+      {showDepositModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="bg-telegram-card rounded-2xl p-6 w-full max-w-md relative shadow-lg">
+            <button
+              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+              onClick={() => setShowDepositModal(false)}
+              aria-label="Close"
+            >
+              <XMarkIcon className="w-6 h-6" />
+            </button>
+            <div className="text-xl font-bold mb-2 text-white text-center">Deposit</div>
+            <div className="text-gray-400 text-center mb-4">Enter the amount you want to deposit</div>
+            <div className="flex items-center bg-telegram-dark rounded-xl px-4 py-3 mb-4 border border-telegram-blue">
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24" className="mr-2"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6 0 2.22 1.21 4.15 3.01 5.19.13.08.28.13.44.13.16 0 .31-.05.44-.13C13.79 16.15 15 14.22 15 12c0-3.31-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4 0-2.21 1.79-4 4-4s4 1.79 4 4c0 2.21-1.79 4-4 4z" fill="#08c"/></svg>
+              <input
+                type="number"
+                className="flex-1 bg-transparent text-white placeholder-gray-400 outline-none"
+                placeholder="Amount"
+                value={depositAmount}
+                onChange={e => setDepositAmount(e.target.value)}
+              />
+              <span className="ml-2 text-gray-400">Balance: <span className="text-telegram-blue font-bold">{balance} <svg width='16' height='16' fill='none' viewBox='0 0 24 24' style={{display:'inline',verticalAlign:'middle'}}><path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-3.31 0-6 2.69-6 6 0 2.22 1.21 4.15 3.01 5.19.13.08.28.13.44.13.16 0 .31-.05.44-.13C13.79 16.15 15 14.22 15 12c0-3.31-2.69-6-6-6zm0 10c-2.21 0-4-1.79-4-4 0-2.21 1.79-4 4-4s4 1.79 4 4c0 2.21-1.79 4-4 4z' fill='#08c'/></svg></span></span>
+            </div>
+            <button
+              className="w-full bg-telegram-blue hover:bg-telegram-btn-dark text-white font-bold py-3 rounded-xl text-lg transition-colors flex items-center justify-center"
+              onClick={() => {/* Логика депозита */}}
+            >
+              <svg width="24" height="24" fill="none" viewBox="0 0 24 24" className="mr-2"><rect width="24" height="24" rx="12" fill="#fff"/><path d="M7 12h10M12 7v10" stroke="#08c" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              Deposit
+            </button>
+          </div>
+        </div>
+      )}
+      {/* Withdraw Modal */}
+      {showWithdrawModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="bg-telegram-card rounded-2xl p-6 w-full max-w-md relative shadow-lg">
+            <button
+              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+              onClick={() => setShowWithdrawModal(false)}
+              aria-label="Close"
+            >
+              <XMarkIcon className="w-6 h-6" />
+            </button>
+            <div className="flex flex-col items-center">
+              <div className="bg-yellow-400 rounded-full p-3 mb-4">
+                <svg width="32" height="32" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="12" fill="#fff"/><path d="M12 8v4m0 4h.01" stroke="#FFA500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </div>
+              <div className="text-xl font-bold mb-2 text-white text-center">Insufficient Balance</div>
+              <div className="text-gray-400 text-center mb-4">You do not have enough balance, please charge your balance first!</div>
+              <button
+                className="w-full bg-telegram-blue hover:bg-telegram-btn-dark text-white font-bold py-3 rounded-xl text-lg transition-colors"
+                onClick={() => {/* Логика пополнения */}}
+              >
+                Charge Balance
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Gift Modal */}
       {showGiftModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
@@ -168,6 +232,21 @@ export default function App() {
             <CurrencyDollarIcon className="w-5 h-5 text-telegram-blue mr-1" />
             <span>{balance.toFixed(2)} TON</span>
           </div>
+          {/* + и - */}
+          <button
+            className="ml-2 bg-telegram-blue hover:bg-telegram-btn-dark text-white rounded-full p-1 transition-colors"
+            onClick={() => setShowDepositModal(true)}
+            aria-label="Deposit"
+          >
+            <PlusIcon className="w-6 h-6" />
+          </button>
+          <button
+            className="ml-1 bg-telegram-blue hover:bg-telegram-btn-dark text-white rounded-full p-1 transition-colors"
+            onClick={() => setShowWithdrawModal(true)}
+            aria-label="Withdraw"
+          >
+            <MinusIcon className="w-6 h-6" />
+          </button>
           {isConnected && walletAddress && (
             <div className="text-xs text-gray-400 truncate max-w-[120px]">
               {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
