@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { PlusIcon, MinusIcon, GiftIcon, ShoppingCartIcon, UserCircleIcon, HomeIcon, CurrencyDollarIcon, ViewColumnsIcon, ChartBarIcon } from '@heroicons/react/24/outline';
+import { GiftIcon, ShoppingCartIcon, UserCircleIcon, CurrencyDollarIcon, ViewColumnsIcon, ChartBarIcon } from '@heroicons/react/24/outline';
 import MarketIcon from './icons/Market.png';
 import { useTonConnectUI, useTonWallet } from '@tonconnect/ui-react';
 import { getBalance, sendTransaction } from './ton-connect';

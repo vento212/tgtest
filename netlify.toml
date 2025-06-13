@@ -1,6 +1,11 @@
 [build]
   command = "npm run build"
   publish = "build"
+  environment = { NODE_VERSION = "18.17.0" }
+
+[build.environment]
+  NODE_OPTIONS = "--max_old_space_size=4096"
+  GENERATE_SOURCEMAP = "false"
 
 [[redirects]]
   from = "/*"
