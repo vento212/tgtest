@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { GiftIcon, ShoppingCartIcon, UserCircleIcon, CurrencyDollarIcon, ViewColumnsIcon, ChartBarIcon } from '@heroicons/react/24/outline';
+import { GiftIcon, ShoppingCartIcon, UserCircleIcon, CurrencyDollarIcon, ViewColumnsIcon, ChartBarIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import MarketIcon from './icons/Market.png';
 import { useTonConnectUI, useTonWallet } from '@tonconnect/ui-react';
 import { getBalance, sendTransaction } from './ton-connect';
@@ -17,6 +17,8 @@ export default function App() {
   const wallet = useTonWallet();
   const [isConnected, setIsConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
+  const [showGiftModal, setShowGiftModal] = useState(false);
+  const [giftRecipient, setGiftRecipient] = useState('');
 
   // Подписываемся на изменения состояния кошелька
   useEffect(() => {
@@ -111,6 +113,35 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-telegram-dark flex flex-col items-center py-4">
+      {/* Gift Modal */}
+      {showGiftModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
+          <div className="bg-telegram-card rounded-2xl p-6 w-full max-w-md relative shadow-lg">
+            <button
+              className="absolute top-4 right-4 text-gray-400 hover:text-white"
+              onClick={() => setShowGiftModal(false)}
+              aria-label="Close"
+            >
+              <XMarkIcon className="w-6 h-6" />
+            </button>
+            <div className="text-lg font-bold mb-4 text-white">Buy gift for someone else</div>
+            <input
+              type="text"
+              className="w-full rounded-xl px-4 py-3 mb-4 bg-telegram-dark text-white placeholder-gray-400 border border-telegram-blue focus:outline-none focus:ring-2 focus:ring-telegram-blue"
+              placeholder="Recipient Username or UserId"
+              value={giftRecipient}
+              onChange={e => setGiftRecipient(e.target.value)}
+            />
+            <button
+              className="w-full bg-telegram-blue hover:bg-telegram-btn-dark text-white font-bold py-3 rounded-xl text-lg transition-colors"
+              onClick={() => {/* Здесь будет логика поиска пользователя */}}
+            >
+              Find User
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Message Popup */}
       {message && (
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-telegram-blue text-white px-4 py-2 rounded-lg shadow-lg z-50">
@@ -153,7 +184,10 @@ export default function App() {
       <div className="w-full max-w-md bg-telegram-card rounded-2xl shadow-lg p-4 mb-4">
         <div className="relative rounded-xl overflow-hidden mb-4" style={{background: 'linear-gradient(135deg, #8f5be8 0%, #6a82fb 100%)'}}>
           <img src={nftImg} alt="NFT" className="w-full h-64 object-contain" />
-          <GiftIcon className="w-8 h-8 text-telegram-blue absolute left-2 bottom-2 bg-white rounded-full p-1" />
+          <GiftIcon
+            className="w-8 h-8 text-telegram-blue absolute left-2 bottom-2 bg-white rounded-full p-1 cursor-pointer hover:bg-telegram-blue hover:text-white transition-colors"
+            onClick={() => setShowGiftModal(true)}
+          />
           <ShoppingCartIcon className="w-8 h-8 text-telegram-blue absolute right-2 bottom-2 bg-white rounded-full p-1" />
         </div>
         <div className="flex items-center justify-between mb-1">
