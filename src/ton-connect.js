@@ -1,7 +1,7 @@
 import { TonConnect } from '@tonconnect/sdk';
 
-// Создаем экземпляр TonConnect с локальным манифестом
-const manifestUrl = 'http://localhost:3000/tonconnect-manifest.json';
+// Создаем экземпляр TonConnect с манифестом
+const manifestUrl = 'https://fancy-melomakarona-ceb24e.netlify.app/tonconnect-manifest.json';
 
 export const connector = new TonConnect({ manifestUrl });
 
