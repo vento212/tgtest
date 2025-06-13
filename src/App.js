@@ -8,6 +8,9 @@ import './App.css';
 const avatarUrl = 'https://i.imgur.com/8Km9tLL.png'; // Заглушка для аватара
 const nftImg = 'https://via.placeholder.com/400x400/8f5be8/ffffff?text=NFT'; // Заглушка для NFT
 
+// Получаем данные пользователя Telegram, если приложение открыто как WebApp
+const tgUser = window?.Telegram?.WebApp?.initDataUnsafe?.user;
+
 export default function App() {
   const [balance, setBalance] = useState(0);
   const [message, setMessage] = useState('');
@@ -171,7 +174,11 @@ export default function App() {
             </div>
           )}
         </div>
-        <img src={avatarUrl} alt="avatar" className="w-8 h-8 rounded-full object-cover border-2 border-telegram-blue" />
+        <img
+          src={tgUser?.photo_url || avatarUrl}
+          alt="avatar"
+          className="w-8 h-8 rounded-full object-cover border-2 border-telegram-blue"
+        />
         <button 
           onClick={() => tonConnectUI.openModal()}
           className="bg-telegram-blue hover:bg-telegram-btn-dark text-white font-semibold rounded-full px-4 py-2 ml-2 transition-colors"
