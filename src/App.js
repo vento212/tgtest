@@ -4,7 +4,6 @@ import MarketIcon from './icons/Market.png';
 import { useTonConnectUI, useTonWallet } from '@tonconnect/ui-react';
 import { getBalance, sendTransaction } from './ton-connect';
 import './App.css';
-import nftVideo from './icons/IMG_0494.MP4';
 
 const avatarUrl = 'https://i.imgur.com/8Km9tLL.png'; // Заглушка для аватара
 const nftImg = 'https://via.placeholder.com/400x400/8f5be8/ffffff?text=NFT'; // Заглушка для NFT
@@ -289,7 +288,7 @@ export default function App() {
       <div className="w-full max-w-md bg-telegram-card rounded-2xl shadow-lg p-4 mb-4">
         <div className="relative rounded-xl overflow-hidden mb-4" style={{background: 'linear-gradient(135deg, #8f5be8 0%, #6a82fb 100%)'}}>
           <video
-            src={nftVideo}
+            src="/IMG_0494.MP4"
             autoPlay
             loop
             muted
