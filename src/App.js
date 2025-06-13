@@ -134,6 +134,11 @@ export default function App() {
             <CurrencyDollarIcon className="w-5 h-5 text-telegram-blue mr-1" />
             <span>{balance.toFixed(2)} TON</span>
           </div>
+          {isConnected && walletAddress && (
+            <div className="text-xs text-gray-400 truncate max-w-[120px]">
+              {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+            </div>
+          )}
         </div>
         <img src={avatarUrl} alt="avatar" className="w-8 h-8 rounded-full object-cover border-2 border-telegram-blue" />
         <button 
