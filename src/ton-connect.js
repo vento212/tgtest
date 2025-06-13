@@ -4,11 +4,7 @@ import { TonConnect } from '@tonconnect/sdk';
 const manifestUrl = 'https://fancy-melomakarona-ceb24e.netlify.app/tonconnect-manifest.json';
 
 export const tonConnect = new TonConnect({
-    manifestUrl,
-    connectButtonOptions: {
-        buttonRootId: 'ton-connect-button',
-        enableSandbox: false
-    }
+    manifestUrl
 });
 
 // Функция для получения баланса

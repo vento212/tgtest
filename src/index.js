@@ -4,7 +4,7 @@ import './index.css';
 import App from './App';
 import { TonConnectUIProvider } from '@tonconnect/ui-react';
 
-const manifestUrl = 'https://mystery-destiny-temple-pd.trycloudflare.com/tonconnect-manifest.json';
+const manifestUrl = 'https://fancy-melomakarona-ceb24e.netlify.app/tonconnect-manifest.json';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
