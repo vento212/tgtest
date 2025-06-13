@@ -1,0 +1,6 @@
+tunnel: ton-app
+credentials-file: /Users/vento/.cloudflared/ton-app.json
+ingress:
+  - hostname: ton-app.your-domain.com
+    service: http://localhost:3001
+  - service: http_status:404
