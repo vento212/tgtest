@@ -8,6 +8,9 @@ export const tonConnect = new TonConnect({
     connectButtonOptions: {
         buttonRootId: 'ton-connect-button',
         enableSandbox: false
+    },
+    walletsListConfiguration: {
+        includeWallets: ['tonkeeper', 'tonhub', 'mytonwallet']
     }
 });
 

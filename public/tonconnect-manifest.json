@@ -4,5 +4,6 @@
   "iconUrl": "https://fancy-melomakarona-ceb24e.netlify.app/logo192.png",
   "termsOfUseUrl": "https://fancy-melomakarona-ceb24e.netlify.app/terms",
   "privacyPolicyUrl": "https://fancy-melomakarona-ceb24e.netlify.app/privacy",
-  "features": ["ton_addr", "ton_proof", "ton_sign"]
+  "features": ["ton_addr", "ton_proof", "ton_sign"],
+  "wallets": ["tonkeeper", "tonhub", "mytonwallet"]
 } 
