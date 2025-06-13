@@ -76,21 +76,33 @@ export default function App() {
   }, [tonConnectUI]);
 
   const handleBuy = async () => {
-    if (!wallet) {
-      setMessage('Please connect your wallet first');
+    if (!wallet || !isConnected) {
+      setMessage('Please connect your wallet first!');
       return;
     }
 
     try {
       setIsLoading(true);
       setMessage('Processing purchase...');
+      
+      // Проверяем баланс перед покупкой
+      const currentBalance = await getBalance(wallet.account.address);
+      if (currentBalance < 23.1) {
+        setMessage('Insufficient balance!');
+        return;
+      }
+
       // Здесь должен быть адрес смарт-контракта NFT
       const nftContractAddress = 'EQD...'; // Замените на реальный адрес
       await sendTransaction(nftContractAddress, 23.1, 'Buy NFT #16173');
       setMessage('Purchase successful!');
     } catch (error) {
       console.error('Error in purchase:', error);
-      setMessage('Error: ' + (error.message || 'Failed to process purchase'));
+      if (error.message.includes('TON_CONNECT_SDK_ERROR')) {
+        setMessage('Please connect your wallet first!');
+      } else {
+        setMessage('Error: ' + (error.message || 'Failed to process purchase'));
+      }
     } finally {
       setIsLoading(false);
       setTimeout(() => setMessage(''), 3000);
@@ -98,8 +110,8 @@ export default function App() {
   };
 
   const handleOffer = async () => {
-    if (!wallet) {
-      setMessage('Please connect your wallet first');
+    if (!wallet || !isConnected) {
+      setMessage('Please connect your wallet first!');
       return;
     }
 
@@ -110,7 +122,11 @@ export default function App() {
       setMessage('Offer created successfully!');
     } catch (error) {
       console.error('Error in offer creation:', error);
-      setMessage('Error: ' + (error.message || 'Failed to create offer'));
+      if (error.message.includes('TON_CONNECT_SDK_ERROR')) {
+        setMessage('Please connect your wallet first!');
+      } else {
+        setMessage('Error: ' + (error.message || 'Failed to create offer'));
+      }
     } finally {
       setIsLoading(false);
       setTimeout(() => setMessage(''), 3000);
