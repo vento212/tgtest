@@ -23,7 +23,15 @@ export const getBalance = async (address) => {
 };
 
 // Функция для отправки транзакции
-export const sendTransaction = async (toAddress, amount) => {
+export const sendTransaction = async (toAddress, amount, comment = '') => {
+  if (!tonConnect) {
+    throw new Error('TON Connect not initialized');
+  }
+
+  if (!toAddress || typeof toAddress !== 'string') {
+    throw new Error('Invalid recipient address');
+  }
+
   try {
     const transaction = {
       validUntil: Math.floor(Date.now() / 1000) + 600, // 10 минут
@@ -31,11 +39,14 @@ export const sendTransaction = async (toAddress, amount) => {
         {
           address: toAddress,
           amount: (amount * 1000000000).toString(), // Конвертируем ТОН в наноТОН
+          payload: comment ? Buffer.from(comment).toString('base64') : undefined
         },
       ],
     };
 
+    console.log('Sending transaction:', transaction);
     const result = await tonConnect.sendTransaction(transaction);
+    console.log('Transaction result:', result);
     return result;
   } catch (error) {
     console.error('Error sending transaction:', error);

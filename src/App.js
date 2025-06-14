@@ -76,35 +76,40 @@ export default function App() {
 
   const handleBuy = async () => {
     if (!wallet || !isConnected) {
-      setMessage('Please connect your wallet first!');
+      setMessage('Пожалуйста, подключите кошелек!');
       return;
     }
 
     try {
       setIsLoading(true);
-      setMessage('Processing purchase...');
+      setMessage('Обработка покупки...');
       
       // Проверяем баланс перед покупкой
       const currentBalance = await getBalance(wallet.account.address);
       console.log('currentBalance:', currentBalance);
       if (currentBalance < 0.001) {
-        setMessage('Insufficient balance!');
+        setMessage('Недостаточно средств!');
         return;
       }
 
       // Здесь должен быть адрес смарт-контракта NFT
-      const nftContractAddress = 'UQCTOZNVJUIoNFqdLf27ealVbCgN8M4l66XUreIHSeKCMXQW'; // Адрес вашего TON-кошелька
+      const nftContractAddress = 'UQCTOZNVJUIoNFqdLf27ealVbCgN8M4l66XUreIHSeKCMXQW';
+      console.log('Sending transaction to:', nftContractAddress);
       await sendTransaction(nftContractAddress, 0.001, 'Buy NFT #13174');
-      setMessage('Purchase successful!');
+      setMessage('Покупка успешно завершена!');
 
       console.log('wallet:', wallet);
       console.log('walletAddress:', walletAddress);
     } catch (error) {
       console.error('Error in purchase:', error);
       if (error.message.includes('TON_CONNECT_SDK_ERROR')) {
-        setMessage('Please connect your wallet first!');
+        setMessage('Ошибка подключения кошелька. Попробуйте переподключить.');
+      } else if (error.message.includes('not initialized')) {
+        setMessage('Ошибка инициализации TON Connect. Обновите страницу.');
+      } else if (error.message.includes('Invalid recipient')) {
+        setMessage('Ошибка: неверный адрес получателя');
       } else {
-        setMessage('Error: ' + (error.message || 'Failed to process purchase'));
+        setMessage('Ошибка: ' + (error.message || 'Не удалось обработать покупку'));
       }
     } finally {
       setIsLoading(false);
