@@ -326,27 +326,27 @@ export default function App() {
 
       {/* Bottom Navigation */}
       <div className="w-full max-w-md bg-telegram-gray rounded-2xl flex justify-between px-2 py-2 mb-4 text-xs">
-        <div className="flex flex-col items-center flex-1">
+        <div className="flex flex-col items-center flex-1 cursor-pointer" onClick={e => e.preventDefault()}>
           <img src={MarketIcon} alt="Market" className="w-7 h-7 mx-auto mb-1" />
           <span className="font-bold text-white">Market</span>
         </div>
-        <div className="flex flex-col items-center flex-1">
+        <div className="flex flex-col items-center flex-1 cursor-pointer" onClick={e => e.preventDefault()}>
           <CurrencyDollarIcon className="w-7 h-7 mx-auto mb-1 text-white font-bold" />
           <span className="font-bold text-white">Auctions</span>
         </div>
-        <div className="flex flex-col items-center flex-1">
+        <div className="flex flex-col items-center flex-1 cursor-pointer" onClick={e => e.preventDefault()}>
           <GiftIcon className="w-7 h-7 mx-auto mb-1 text-white font-bold" />
           <span className="font-bold text-white">My Gifts</span>
         </div>
-        <div className="flex flex-col items-center flex-1">
+        <div className="flex flex-col items-center flex-1 cursor-pointer" onClick={e => e.preventDefault()}>
           <ViewColumnsIcon className="w-7 h-7 mx-auto mb-1 text-white font-bold" />
           <span className="font-bold text-white">GiFi</span>
         </div>
-        <div className="flex flex-col items-center flex-1">
+        <div className="flex flex-col items-center flex-1 cursor-pointer" onClick={e => e.preventDefault()}>
           <UserCircleIcon className="w-7 h-7 mx-auto mb-1 text-white font-bold" />
           <span className="font-bold text-white">Gallery</span>
         </div>
-        <div className="flex flex-col items-center flex-1">
+        <div className="flex flex-col items-center flex-1 cursor-pointer" onClick={e => e.preventDefault()}>
           <ChartBarIcon className="w-7 h-7 mx-auto mb-1 text-white font-bold" />
           <span className="font-bold text-white">Activity</span>
         </div>
