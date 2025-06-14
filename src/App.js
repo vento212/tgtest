@@ -327,28 +327,28 @@ export default function App() {
       {/* Bottom Navigation */}
       <div className="w-full max-w-md bg-telegram-gray rounded-2xl flex justify-between px-2 py-2 mb-4 text-xs">
         <div className="flex flex-col items-center flex-1">
-          <img src={MarketIcon} alt="Market" className="w-6 h-6 mx-auto mb-1" />
-          Market
+          <img src={MarketIcon} alt="Market" className="w-7 h-7 mx-auto mb-1" />
+          <span className="font-bold text-white">Market</span>
         </div>
         <div className="flex flex-col items-center flex-1">
-          <CurrencyDollarIcon className="w-6 h-6 mx-auto mb-1" />
-          Auctions
+          <CurrencyDollarIcon className="w-7 h-7 mx-auto mb-1 text-white font-bold" />
+          <span className="font-bold text-white">Auctions</span>
         </div>
         <div className="flex flex-col items-center flex-1">
-          <GiftIcon className="w-6 h-6 mx-auto mb-1" />
-          My Gifts
+          <GiftIcon className="w-7 h-7 mx-auto mb-1 text-white font-bold" />
+          <span className="font-bold text-white">My Gifts</span>
         </div>
         <div className="flex flex-col items-center flex-1">
-          <ViewColumnsIcon className="w-6 h-6 mx-auto mb-1" />
-          GiFi
+          <ViewColumnsIcon className="w-7 h-7 mx-auto mb-1 text-white font-bold" />
+          <span className="font-bold text-white">GiFi</span>
         </div>
         <div className="flex flex-col items-center flex-1">
-          <UserCircleIcon className="w-6 h-6 mx-auto mb-1" />
-          Gallery
+          <UserCircleIcon className="w-7 h-7 mx-auto mb-1 text-white font-bold" />
+          <span className="font-bold text-white">Gallery</span>
         </div>
         <div className="flex flex-col items-center flex-1">
-          <ChartBarIcon className="w-6 h-6 mx-auto mb-1" />
-          Activity
+          <ChartBarIcon className="w-7 h-7 mx-auto mb-1 text-white font-bold" />
+          <span className="font-bold text-white">Activity</span>
         </div>
       </div>
 
