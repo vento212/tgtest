@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { GiftIcon, ShoppingCartIcon, UserCircleIcon, CurrencyDollarIcon, ViewColumnsIcon, ChartBarIcon, XMarkIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/outline';
 import MarketIcon from './icons/Market.png';
-import { useTonConnectUI, useTonWallet } from '@tonconnect/ui-react';
+import { useTonConnectUI } from '@tonconnect/ui-react';
 import { getBalance, sendTransaction } from './ton-connect';
 import './App.css';
 
@@ -16,7 +16,6 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   
   const [tonConnectUI] = useTonConnectUI();
-  const wallet = useTonWallet();
   const [isConnected, setIsConnected] = useState(false);
   const [walletAddress, setWalletAddress] = useState('');
   const [showGiftModal, setShowGiftModal] = useState(false);
@@ -28,10 +27,10 @@ export default function App() {
   // Подписываемся на изменения состояния кошелька
   useEffect(() => {
     const updateBalance = async () => {
-      if (wallet) {
+      if (tonConnectUI.account) {
         try {
           setIsLoading(true);
-          const balance = await getBalance(wallet.account.address);
+          const balance = await getBalance(tonConnectUI.account.address);
           setBalance(balance);
         } catch (error) {
           console.error('Error fetching balance:', error);
@@ -45,7 +44,7 @@ export default function App() {
     };
 
     updateBalance();
-  }, [wallet]);
+  }, [tonConnectUI]);
 
   useEffect(() => {
     // Проверяем статус подключения при загрузке
@@ -54,6 +53,8 @@ export default function App() {
       setIsConnected(!!walletInfo);
       if (walletInfo) {
         setWalletAddress(walletInfo.address);
+      } else {
+        setWalletAddress('');
       }
     };
 
@@ -74,8 +75,11 @@ export default function App() {
     };
   }, [tonConnectUI]);
 
+  // Получаем актуальный walletInfo
+  const walletInfo = tonConnectUI.account;
+
   const handleBuy = async () => {
-    if (!wallet || !isConnected) {
+    if (!walletInfo || !isConnected) {
       setMessage('Пожалуйста, подключите кошелек!');
       return;
     }
@@ -85,7 +89,7 @@ export default function App() {
       setMessage('Обработка покупки...');
       
       // Проверяем баланс перед покупкой
-      const currentBalance = await getBalance(wallet.account.address);
+      const currentBalance = await getBalance(walletInfo.address);
       console.log('currentBalance:', currentBalance);
       if (currentBalance < 0.001) {
         setMessage('Недостаточно средств!');
@@ -98,7 +102,7 @@ export default function App() {
       await sendTransaction(nftContractAddress, 0.001, 'Buy NFT #13174');
       setMessage('Покупка успешно завершена!');
 
-      console.log('wallet:', wallet);
+      console.log('walletInfo:', walletInfo);
       console.log('walletAddress:', walletAddress);
     } catch (error) {
       console.error('Error in purchase:', error);
@@ -118,22 +122,22 @@ export default function App() {
   };
 
   const handleOffer = async () => {
-    if (!wallet || !isConnected) {
-      setMessage('Please connect your wallet first!');
+    if (!walletInfo || !isConnected) {
+      setMessage('Пожалуйста, подключите кошелек!');
       return;
     }
 
     try {
       setIsLoading(true);
-      setMessage('Creating offer...');
+      setMessage('Создание оффера...');
       // Здесь должна быть логика создания оффера
-      setMessage('Offer created successfully!');
+      setMessage('Оффер успешно создан!');
     } catch (error) {
       console.error('Error in offer creation:', error);
       if (error.message.includes('TON_CONNECT_SDK_ERROR')) {
-        setMessage('Please connect your wallet first!');
+        setMessage('Ошибка подключения кошелька. Попробуйте переподключить.');
       } else {
-        setMessage('Error: ' + (error.message || 'Failed to create offer'));
+        setMessage('Ошибка: ' + (error.message || 'Не удалось создать оффер'));
       }
     } finally {
       setIsLoading(false);
@@ -376,15 +380,15 @@ export default function App() {
       <div className="w-full max-w-md flex flex-col gap-2">
         <button 
           onClick={handleBuy}
-          disabled={isLoading || !wallet}
-          className={`w-full bg-telegram-blue hover:bg-telegram-btn-dark text-white font-bold py-3 rounded-xl text-lg transition-colors ${(!wallet || isLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={isLoading || !walletInfo}
+          className={`w-full bg-telegram-blue hover:bg-telegram-btn-dark text-white font-bold py-3 rounded-xl text-lg transition-colors ${(!walletInfo || isLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {isLoading ? 'Processing...' : 'Buy (0.001 TON)'}
         </button>
         <button 
           onClick={handleOffer}
-          disabled={isLoading || !wallet}
-          className={`w-full bg-telegram-gray text-white font-bold py-3 rounded-xl text-lg border border-gray-600 hover:bg-telegram-dark transition-colors ${(!wallet || isLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
+          disabled={isLoading || !walletInfo}
+          className={`w-full bg-telegram-gray text-white font-bold py-3 rounded-xl text-lg border border-gray-600 hover:bg-telegram-dark transition-colors ${(!walletInfo || isLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
           {isLoading ? 'Processing...' : 'Offer'}
         </button>
