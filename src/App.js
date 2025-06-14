@@ -272,9 +272,15 @@ export default function App() {
               alt="avatar"
               className="w-8 h-8 rounded-full object-cover border-2 border-telegram-blue"
             />
-          ) : (
+          ) : tgUser?.first_name ? (
             <div className="w-8 h-8 rounded-full bg-telegram-blue flex items-center justify-center text-white font-bold border-2 border-telegram-blue">
-              {tgUser?.first_name?.[0] || "?"}
+              {tgUser.first_name[0]}
+            </div>
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-gray-400 flex items-center justify-center text-white font-bold border-2 border-telegram-blue">
+              <svg xmlns='http://www.w3.org/2000/svg' className='w-5 h-5' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5.121 17.804A9 9 0 1112 21a9 9 0 01-6.879-3.196z' />
+              </svg>
             </div>
           )}
           <button 
