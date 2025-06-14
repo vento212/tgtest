@@ -4,7 +4,7 @@ import MarketIcon from './icons/Market.png';
 import { useTonConnectUI } from '@tonconnect/ui-react';
 import { getBalance, sendTransaction } from './ton-connect';
 import './App.css';
-import { QRCode } from 'qrcode.react';
+import QRCode from 'qrcode.react';
 
 // Получаем данные пользователя Telegram, если приложение открыто как WebApp
 const tgUser = window?.Telegram?.WebApp?.initDataUnsafe?.user;
