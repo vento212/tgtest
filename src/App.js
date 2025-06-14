@@ -92,7 +92,7 @@ export default function App() {
       }
 
       // Здесь должен быть адрес смарт-контракта NFT
-      const nftContractAddress = 'EQD...'; // Замените на реальный адрес
+      const nftContractAddress = 'UQCTOZNVJUIoNFqdLf27ealVbCgN8M4l66XUreIHSeKCMXQW'; // Адрес вашего TON-кошелька
       await sendTransaction(nftContractAddress, 23.1, 'Buy NFT #16173');
       setMessage('Purchase successful!');
     } catch (error) {
