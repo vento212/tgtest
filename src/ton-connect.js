@@ -39,7 +39,7 @@ export const sendTransaction = async (toAddress, amount, comment = '') => {
         {
           address: toAddress,
           amount: (amount * 1000000000).toString(), // Конвертируем ТОН в наноТОН
-          payload: comment ? Buffer.from(comment).toString('base64') : undefined
+          payload: comment ? btoa(unescape(encodeURIComponent(comment))) : undefined
         },
       ],
     };
