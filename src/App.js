@@ -87,7 +87,7 @@ export default function App() {
       // Проверяем баланс перед покупкой
       const currentBalance = await getBalance(wallet.account.address);
       console.log('currentBalance:', currentBalance);
-      if (currentBalance < 23.1) {
+      if (currentBalance < 0.001) {
         setMessage('Insufficient balance!');
         return;
       }
