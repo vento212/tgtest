@@ -268,11 +268,17 @@ export default function App() {
           )}
         </div>
         <div className="flex items-center gap-2 sm:gap-4">
-          <img
-            src={tgUser?.photo_url || avatarUrl}
-            alt="avatar"
-            className="w-8 h-8 rounded-full object-cover border-2 border-telegram-blue"
-          />
+          {tgUser?.photo_url ? (
+            <img
+              src={tgUser.photo_url}
+              alt="avatar"
+              className="w-8 h-8 rounded-full object-cover border-2 border-telegram-blue"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-telegram-blue flex items-center justify-center text-white font-bold border-2 border-telegram-blue">
+              {tgUser?.first_name?.[0] || "?"}
+            </div>
+          )}
           <button 
             onClick={() => tonConnectUI.openModal()}
             className="bg-telegram-blue hover:bg-telegram-btn-dark text-white font-semibold rounded-full px-4 py-2 transition-colors"
