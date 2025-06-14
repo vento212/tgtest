@@ -23,7 +23,6 @@ export default function App() {
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
-  const tonDeeplink = 'ton://transfer/UQCTOZNVJUIoNFqdLf27ealVbCgN8M4l66XUreIHSeKCMXQW?amount=1000000&text=Buy%20NFT%20%2313174';
 
   // Подписываемся на изменения состояния кошелька
   useEffect(() => {
@@ -357,30 +356,7 @@ export default function App() {
         >
           {isLoading ? 'Processing...' : 'Buy (0.001 TON)'}
         </button>
-        {/* Deeplink TON payment button + copy + instruction */}
-        <a
-          href="ton://transfer/UQCTOZNVJUIoNFqdLf27ealVbCgN8M4l66XUreIHSeKCMXQW?amount=1000000&text=Buy%20NFT%20%2313174"
-          onClick={e => {
-            e.preventDefault();
-            window.open('ton://transfer/UQCTOZNVJUIoNFqdLf27ealVbCgN8M4l66XUreIHSeKCMXQW?amount=1000000&text=Buy%20NFT%20%2313174', '_blank');
-          }}
-          className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl text-lg transition-colors block text-center"
-        >
-          Оплатить через кошелек (deeplink)
-        </a>
         <button
-          onClick={() => {
-            navigator.clipboard.writeText('ton://transfer/UQCTOZNVJUIoNFqdLf27ealVbCgN8M4l66XUreIHSeKCMXQW?amount=1000000&text=Buy%20NFT%20%2313174');
-            setMessage('Ссылка скопирована! Откройте TON-кошелек и вставьте ссылку.');
-          }}
-          className="w-full bg-gray-700 hover:bg-gray-800 text-white font-bold py-2 rounded-xl text-base transition-colors mt-2"
-        >
-          Скопировать ссылку для оплаты
-        </button>
-        <div className="text-xs text-gray-400 mt-2 text-center">
-          Если оплата не началась автоматически, откройте TON-кошелек и вставьте ссылку из буфера обмена.
-        </div>
-        <button 
           onClick={handleOffer}
           disabled={isLoading || !walletInfo}
           className={`w-full bg-telegram-gray text-white font-bold py-3 rounded-xl text-lg border border-gray-600 hover:bg-telegram-dark transition-colors ${(!walletInfo || isLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
