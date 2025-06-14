@@ -285,14 +285,14 @@ export default function App() {
 
       {/* NFT Card */}
       <div className="w-full max-w-md bg-telegram-card rounded-2xl shadow-lg p-4 mb-4">
-        <div className="relative rounded-xl overflow-hidden mb-4" style={{background: 'linear-gradient(135deg, #8f5be8 0%, #6a82fb 100%)'}}>
+        <div className="relative rounded-xl overflow-hidden mb-4">
           <video
             src="/IMG_0494.MP4"
             autoPlay
             loop
             muted
             playsInline
-            className="w-full h-64 object-contain rounded-xl"
+            className="w-full h-64 object-cover rounded-xl"
           />
           <GiftIcon
             className="w-8 h-8 text-telegram-blue absolute left-2 bottom-2 bg-white rounded-full p-1 cursor-pointer hover:bg-telegram-blue hover:text-white transition-colors"
