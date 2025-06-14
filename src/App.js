@@ -4,7 +4,6 @@ import MarketIcon from './icons/Market.png';
 import { useTonConnectUI } from '@tonconnect/ui-react';
 import { getBalance, sendTransaction } from './ton-connect';
 import './App.css';
-import QRCode from 'qrcode.react';
 
 // Получаем данные пользователя Telegram, если приложение открыто как WebApp
 const tgUser = window?.Telegram?.WebApp?.initDataUnsafe?.user;
@@ -24,7 +23,6 @@ export default function App() {
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
-  const [showQR, setShowQR] = useState(false);
   const tonDeeplink = 'ton://transfer/UQCTOZNVJUIoNFqdLf27ealVbCgN8M4l66XUreIHSeKCMXQW?amount=1000000&text=Buy%20NFT%20%2313174';
 
   // Подписываемся на изменения состояния кошелька
@@ -382,28 +380,6 @@ export default function App() {
         <div className="text-xs text-gray-400 mt-2 text-center">
           Если оплата не началась автоматически, откройте TON-кошелек и вставьте ссылку из буфера обмена.
         </div>
-        <button
-          onClick={() => setShowQR(true)}
-          className="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-2 rounded-xl text-base transition-colors mt-2"
-        >
-          Показать QR-код для оплаты
-        </button>
-        {showQR && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60">
-            <div className="bg-white rounded-2xl p-6 w-full max-w-xs relative shadow-lg flex flex-col items-center">
-              <button
-                className="absolute top-4 right-4 text-gray-400 hover:text-black"
-                onClick={() => setShowQR(false)}
-                aria-label="Закрыть"
-              >
-                <span style={{fontSize: 24, fontWeight: 'bold'}}>&times;</span>
-              </button>
-              <div className="mb-4 font-bold text-lg text-black text-center">QR-код для оплаты</div>
-              <QRCode value={tonDeeplink} size={200} />
-              <div className="mt-4 text-xs text-gray-700 text-center">Отсканируйте этот QR-код в вашем TON-кошельке</div>
-            </div>
-          </div>
-        )}
         <button 
           onClick={handleOffer}
           disabled={isLoading || !walletInfo}
