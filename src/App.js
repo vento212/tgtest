@@ -5,8 +5,6 @@ import { useTonConnectUI, useTonWallet } from '@tonconnect/ui-react';
 import { getBalance, sendTransaction } from './ton-connect';
 import './App.css';
 
-const avatarUrl = 'https://i.imgur.com/8Km9tLL.png'; // Заглушка для аватара
-
 // Получаем данные пользователя Telegram, если приложение открыто как WebApp
 const tgUser = window?.Telegram?.WebApp?.initDataUnsafe?.user;
 
