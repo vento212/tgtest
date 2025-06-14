@@ -48,10 +48,12 @@ export default function App() {
 
   const handleBuy = async () => {
     const walletInfo = tonConnectUI.account;
-    console.log('walletInfo at handleBuy:', walletInfo);
-    console.log('tonConnectUI.account at handleBuy:', tonConnectUI.account);
-    if (!walletInfo) {
-      setMessage('Пожалуйста, подключите кошелек!');
+    if (!walletInfo || !walletInfo.address) {
+      setMessage(
+        'Пожалуйста, подключите кошелек!\n' +
+        'walletInfo: ' + JSON.stringify(walletInfo) + '\n' +
+        'tonConnectUI.account: ' + JSON.stringify(tonConnectUI.account)
+      );
       return;
     }
     try {
@@ -81,7 +83,7 @@ export default function App() {
       }
     } finally {
       setIsLoading(false);
-      setTimeout(() => setMessage(''), 3000);
+      setTimeout(() => setMessage(''), 6000);
     }
   };
 
