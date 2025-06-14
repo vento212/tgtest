@@ -16,8 +16,8 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   
   const [tonConnectUI] = useTonConnectUI();
-  const [isConnected, setIsConnected] = useState(false);
-  const [walletAddress, setWalletAddress] = useState('');
+  const walletInfo = tonConnectUI.account;
+  const isConnected = !!walletInfo;
   const [showGiftModal, setShowGiftModal] = useState(false);
   const [giftRecipient, setGiftRecipient] = useState('');
   const [showDepositModal, setShowDepositModal] = useState(false);
@@ -46,64 +46,25 @@ export default function App() {
     updateBalance();
   }, [tonConnectUI]);
 
-  useEffect(() => {
-    // Проверяем статус подключения при загрузке
-    const checkConnection = async () => {
-      const walletInfo = tonConnectUI.account;
-      setIsConnected(!!walletInfo);
-      if (walletInfo) {
-        setWalletAddress(walletInfo.address);
-      } else {
-        setWalletAddress('');
-      }
-    };
-
-    checkConnection();
-
-    // Подписываемся на изменения статуса подключения
-    const unsubscribe = tonConnectUI.onStatusChange((wallet) => {
-      setIsConnected(!!wallet);
-      if (wallet) {
-        setWalletAddress(wallet.address);
-      } else {
-        setWalletAddress('');
-      }
-    });
-
-    return () => {
-      unsubscribe();
-    };
-  }, [tonConnectUI]);
-
-  // Получаем актуальный walletInfo
-  const walletInfo = tonConnectUI.account;
-
   const handleBuy = async () => {
-    if (!walletInfo || !isConnected) {
+    if (!walletInfo) {
       setMessage('Пожалуйста, подключите кошелек!');
       return;
     }
-
     try {
       setIsLoading(true);
       setMessage('Обработка покупки...');
-      
-      // Проверяем баланс перед покупкой
       const currentBalance = await getBalance(walletInfo.address);
       console.log('currentBalance:', currentBalance);
       if (currentBalance < 0.001) {
         setMessage('Недостаточно средств!');
         return;
       }
-
-      // Здесь должен быть адрес смарт-контракта NFT
       const nftContractAddress = 'UQCTOZNVJUIoNFqdLf27ealVbCgN8M4l66XUreIHSeKCMXQW';
       console.log('Sending transaction to:', nftContractAddress);
       await sendTransaction(nftContractAddress, 0.001, 'Buy NFT #13174');
       setMessage('Покупка успешно завершена!');
-
       console.log('walletInfo:', walletInfo);
-      console.log('walletAddress:', walletAddress);
     } catch (error) {
       console.error('Error in purchase:', error);
       if (error.message.includes('TON_CONNECT_SDK_ERROR')) {
@@ -122,11 +83,10 @@ export default function App() {
   };
 
   const handleOffer = async () => {
-    if (!walletInfo || !isConnected) {
+    if (!walletInfo) {
       setMessage('Пожалуйста, подключите кошелек!');
       return;
     }
-
     try {
       setIsLoading(true);
       setMessage('Создание оффера...');
@@ -274,9 +234,9 @@ export default function App() {
           >
             <MinusIcon className="w-6 h-6" />
           </button>
-          {isConnected && walletAddress && (
+          {isConnected && walletInfo?.address && (
             <div className="text-xs text-gray-400 truncate max-w-[120px] ml-2">
-              {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}
+              {walletInfo.address.slice(0, 6)}...{walletInfo.address.slice(-4)}
             </div>
           )}
         </div>
