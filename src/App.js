@@ -314,9 +314,9 @@ export default function App() {
               }
             }}
             className="bg-telegram-blue hover:bg-telegram-btn-dark text-white font-semibold rounded-full px-4 py-2 transition-colors"
-            disabled={isLoading || !tonConnectUI}
+            disabled={isLoading || !tonConnectUI || isConnected}
           >
-            {isConnected ? 'Connected' : 'Connect Wallet'}
+            {isConnected ? 'Кошелек подключен' : 'Подключить кошелек'}
           </button>
         </div>
       </div>
