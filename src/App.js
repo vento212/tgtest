@@ -93,7 +93,7 @@ export default function App() {
 
       // Здесь должен быть адрес смарт-контракта NFT
       const nftContractAddress = 'UQCTOZNVJUIoNFqdLf27ealVbCgN8M4l66XUreIHSeKCMXQW'; // Адрес вашего TON-кошелька
-      await sendTransaction(nftContractAddress, 23.1, 'Buy NFT #16173');
+      await sendTransaction(nftContractAddress, 0.001, 'Buy NFT #13174');
       setMessage('Purchase successful!');
     } catch (error) {
       console.error('Error in purchase:', error);
@@ -370,7 +370,7 @@ export default function App() {
           disabled={isLoading || !wallet}
           className={`w-full bg-telegram-blue hover:bg-telegram-btn-dark text-white font-bold py-3 rounded-xl text-lg transition-colors ${(!wallet || isLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
-          {isLoading ? 'Processing...' : 'Buy (23.1 TON)'}
+          {isLoading ? 'Processing...' : 'Buy (0.001 TON)'}
         </button>
         <button 
           onClick={handleOffer}
