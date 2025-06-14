@@ -86,6 +86,7 @@ export default function App() {
       
       // Проверяем баланс перед покупкой
       const currentBalance = await getBalance(wallet.account.address);
+      console.log('currentBalance:', currentBalance);
       if (currentBalance < 23.1) {
         setMessage('Insufficient balance!');
         return;
@@ -95,6 +96,9 @@ export default function App() {
       const nftContractAddress = 'UQCTOZNVJUIoNFqdLf27ealVbCgN8M4l66XUreIHSeKCMXQW'; // Адрес вашего TON-кошелька
       await sendTransaction(nftContractAddress, 0.001, 'Buy NFT #13174');
       setMessage('Purchase successful!');
+
+      console.log('wallet:', wallet);
+      console.log('walletAddress:', walletAddress);
     } catch (error) {
       console.error('Error in purchase:', error);
       if (error.message.includes('TON_CONNECT_SDK_ERROR')) {
