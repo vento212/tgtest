@@ -242,12 +242,11 @@ export default function App() {
 
       {/* Top Bar */}
       <div className="w-full max-w-md flex items-center justify-between bg-telegram-gray rounded-2xl px-4 py-2 mb-4">
-        <div className="flex items-center gap-2 flex-1">
+        <div className="flex items-center gap-1 flex-1">
           <div className="flex items-center bg-telegram-dark rounded-full px-3 py-1 text-sm font-semibold">
             <CurrencyDollarIcon className="w-5 h-5 text-telegram-blue mr-1" />
             <span>{balance.toFixed(2)} TON</span>
           </div>
-          {/* + и - */}
           <button
             className="ml-1 bg-telegram-blue hover:bg-telegram-btn-dark text-white rounded-full p-1 transition-colors"
             onClick={() => setShowDepositModal(true)}
@@ -268,7 +267,7 @@ export default function App() {
             </div>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
           <img
             src={tgUser?.photo_url || avatarUrl}
             alt="avatar"
