@@ -356,6 +356,16 @@ export default function App() {
         >
           {isLoading ? 'Processing...' : 'Buy (0.001 TON)'}
         </button>
+        {/* Deeplink TON payment button */}
+        <button
+          onClick={() => {
+            const tonDeeplink = `ton://transfer/UQCTOZNVJUIoNFqdLf27ealVbCgN8M4l66XUreIHSeKCMXQW?amount=1000000&text=Buy%20NFT%20%2313174`;
+            window.location.href = tonDeeplink;
+          }}
+          className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl text-lg transition-colors"
+        >
+          Оплатить через кошелек (deeplink)
+        </button>
         <button 
           onClick={handleOffer}
           disabled={isLoading || !walletInfo}
