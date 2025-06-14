@@ -249,14 +249,14 @@ export default function App() {
           </div>
           {/* + и - */}
           <button
-            className="ml-2 bg-telegram-blue hover:bg-telegram-btn-dark text-white rounded-full p-1 transition-colors"
+            className="ml-1 bg-telegram-blue hover:bg-telegram-btn-dark text-white rounded-full p-1 transition-colors"
             onClick={() => setShowDepositModal(true)}
             aria-label="Deposit"
           >
             <PlusIcon className="w-6 h-6" />
           </button>
           <button
-            className="ml-1 bg-telegram-blue hover:bg-telegram-btn-dark text-white rounded-full p-1 transition-colors"
+            className="ml-0 bg-telegram-blue hover:bg-telegram-btn-dark text-white rounded-full p-1 transition-colors"
             onClick={() => setShowWithdrawModal(true)}
             aria-label="Withdraw"
           >
