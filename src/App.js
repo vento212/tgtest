@@ -299,8 +299,22 @@ export default function App() {
             </div>
           )}
           <button 
-            onClick={() => tonConnectUI.openModal()}
+            onClick={async () => {
+              if (!tonConnectUI || typeof tonConnectUI.openModal !== 'function') {
+                setMessage('Ошибка: TON Connect UI не инициализирован!');
+                console.error('tonConnectUI:', tonConnectUI);
+                return;
+              }
+              try {
+                console.log('Открытие модального окна TON Connect...');
+                await tonConnectUI.openModal();
+              } catch (e) {
+                setMessage('Ошибка при открытии окна подключения: ' + (e.message || e));
+                console.error('Ошибка при открытии окна подключения:', e);
+              }
+            }}
             className="bg-telegram-blue hover:bg-telegram-btn-dark text-white font-semibold rounded-full px-4 py-2 transition-colors"
+            disabled={isLoading || !tonConnectUI}
           >
             {isConnected ? 'Connected' : 'Connect Wallet'}
           </button>
