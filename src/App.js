@@ -47,6 +47,9 @@ export default function App() {
   }, [tonConnectUI]);
 
   const handleBuy = async () => {
+    const walletInfo = tonConnectUI.account;
+    console.log('walletInfo at handleBuy:', walletInfo);
+    console.log('tonConnectUI.account at handleBuy:', tonConnectUI.account);
     if (!walletInfo) {
       setMessage('Пожалуйста, подключите кошелек!');
       return;
