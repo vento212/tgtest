@@ -301,12 +301,26 @@ export default function App() {
           <ShoppingCartIcon className="w-8 h-8 text-telegram-blue absolute right-2 bottom-2 bg-white rounded-full p-1" />
         </div>
         <div className="flex items-center justify-between mb-1">
-          <span className="text-xl font-bold">Record Player</span>
-          <span className="text-gray-400 font-semibold">#16173</span>
+          <span className="text-xl font-bold">Swiss Watch</span>
+          <span className="text-gray-400 font-semibold">#13174</span>
         </div>
-        <div className="flex items-center text-gray-400 text-sm mb-2">
-          <span>Model</span>
-          <span className="ml-2 text-telegram-blue cursor-pointer">High Voltage (0.5%)</span>
+        <div className="space-y-1 mb-4">
+          <div className="flex items-center text-white text-sm">
+            <span className="w-24 font-normal">Model</span>
+            <span className="text-telegram-blue font-semibold ml-2">The Original (3%)</span>
+          </div>
+          <div className="flex items-center text-white text-sm">
+            <span className="w-24 font-bold">Symbol</span>
+            <span className="text-telegram-blue font-semibold ml-2">Bull of Heaven (0.8%)</span>
+          </div>
+          <div className="flex items-center text-white text-sm">
+            <span className="w-24 font-normal">Backdrop</span>
+            <span className="text-telegram-blue font-semibold ml-2">Raspberry (2%)</span>
+          </div>
+          <div className="flex items-center text-white text-sm">
+            <span className="w-24 font-bold">Mintable</span>
+            <span className="text-telegram-blue font-semibold ml-2">Mintable!</span>
+          </div>
         </div>
       </div>
 
