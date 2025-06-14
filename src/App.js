@@ -72,15 +72,7 @@ export default function App() {
       console.log('walletInfo:', walletInfo);
     } catch (error) {
       console.error('Error in purchase:', error);
-      if (error.message.includes('TON_CONNECT_SDK_ERROR')) {
-        setMessage('Ошибка подключения кошелька. Попробуйте переподключить.');
-      } else if (error.message.includes('not initialized')) {
-        setMessage('Ошибка инициализации TON Connect. Обновите страницу.');
-      } else if (error.message.includes('Invalid recipient')) {
-        setMessage('Ошибка: неверный адрес получателя');
-      } else {
-        setMessage('Ошибка: ' + (error.message || 'Не удалось обработать покупку'));
-      }
+      setMessage('Ошибка: ' + (error.message || JSON.stringify(error)));
     } finally {
       setIsLoading(false);
       setTimeout(() => setMessage(''), 6000);
