@@ -8,6 +8,8 @@ import './App.css';
 // Получаем данные пользователя Telegram, если приложение открыто как WebApp
 const tgUser = window?.Telegram?.WebApp?.initDataUnsafe?.user;
 
+console.log('tgUser:', tgUser);
+
 export default function App() {
   const [balance, setBalance] = useState(0);
   const [message, setMessage] = useState('');
