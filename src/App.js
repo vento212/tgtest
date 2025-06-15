@@ -46,61 +46,8 @@ export default function App() {
     updateBalance();
   }, [tonConnectUI]);
 
-  const handleBuy = async () => {
-    const walletInfo = tonConnectUI.account;
-    if (!walletInfo || !walletInfo.address) {
-      setMessage(
-        'Пожалуйста, подключите кошелек!\n' +
-        'walletInfo: ' + JSON.stringify(walletInfo) + '\n' +
-        'tonConnectUI.account: ' + JSON.stringify(tonConnectUI.account)
-      );
-      return;
-    }
-    try {
-      setIsLoading(true);
-      setMessage('Обработка покупки...');
-      const currentBalance = await getBalance(walletInfo.address);
-      console.log('currentBalance:', currentBalance);
-      if (currentBalance < 0.001) {
-        setMessage('Недостаточно средств!');
-        return;
-      }
-      const nftContractAddress = 'UQCTOZNVJUIoNFqdLf27ealVbCgN8M4l66XUreIHSeKCMXQW';
-      console.log('Sending transaction to:', nftContractAddress);
-      await sendTransaction(nftContractAddress, 0.001, 'Buy NFT #13174');
-      setMessage('Покупка успешно завершена!');
-      console.log('walletInfo:', walletInfo);
-    } catch (error) {
-      console.error('Error in purchase:', error);
-      setMessage('Ошибка: ' + (error.message || JSON.stringify(error)));
-    } finally {
-      setIsLoading(false);
-      setTimeout(() => setMessage(''), 6000);
-    }
-  };
-
-  const handleOffer = async () => {
-    if (!walletInfo) {
-      setMessage('Пожалуйста, подключите кошелек!');
-      return;
-    }
-    try {
-      setIsLoading(true);
-      setMessage('Создание оффера...');
-      // Здесь должна быть логика создания оффера
-      setMessage('Оффер успешно создан!');
-    } catch (error) {
-      console.error('Error in offer creation:', error);
-      if (error.message.includes('TON_CONNECT_SDK_ERROR')) {
-        setMessage('Ошибка подключения кошелька. Попробуйте переподключить.');
-      } else {
-        setMessage('Ошибка: ' + (error.message || 'Не удалось создать оффер'));
-      }
-    } finally {
-      setIsLoading(false);
-      setTimeout(() => setMessage(''), 3000);
-    }
-  };
+  // Deeplink для оплаты
+  const paymentDeeplink = 'ton://transfer/UQCTOZNVJUIoNFqdLf27ealVbCgN8M4l66XUreIHSeKCMXQW?amount=1000000&text=Buy%20NFT%20%2313174';
 
   // Функция для проверки оплаты
   async function checkPayment() {
@@ -373,13 +320,17 @@ export default function App() {
 
       {/* Buy/Offer Buttons */}
       <div className="w-full max-w-md flex flex-col gap-2">
-        <button 
-          onClick={handleBuy}
-          disabled={isLoading || !walletInfo}
-          className={`w-full bg-telegram-blue hover:bg-telegram-btn-dark text-white font-bold py-3 rounded-xl text-lg transition-colors ${(!walletInfo || isLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
+        {/* Кнопка "Купить" теперь только открывает deeplink */}
+        <a
+          href={paymentDeeplink}
+          onClick={e => {
+            e.preventDefault();
+            window.open(paymentDeeplink, '_blank');
+          }}
+          className="w-full bg-telegram-blue hover:bg-telegram-btn-dark text-white font-bold py-3 rounded-xl text-lg transition-colors block text-center"
         >
-          {isLoading ? 'Processing...' : 'Buy (0.001 TON)'}
-        </button>
+          Купить (0.001 TON)
+        </a>
         {/* Кнопка "Я оплатил" */}
         <button
           onClick={checkPayment}
@@ -388,7 +339,7 @@ export default function App() {
           Я оплатил
         </button>
         <button 
-          onClick={handleOffer}
+          onClick={() => {/* Логика создания оффера */}}
           disabled={isLoading || !walletInfo}
           className={`w-full bg-telegram-gray text-white font-bold py-3 rounded-xl text-lg border border-gray-600 hover:bg-telegram-dark transition-colors ${(!walletInfo || isLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
         >
