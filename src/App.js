@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { GiftIcon, ShoppingCartIcon, UserCircleIcon, CurrencyDollarIcon, ViewColumnsIcon, ChartBarIcon, XMarkIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/outline';
 import MarketIcon from './icons/Market.png';
 import { useTonConnectUI } from '@tonconnect/ui-react';
-import { getBalance, sendTransaction } from './ton-connect';
+import { getBalance } from './ton-connect';
 import './App.css';
 
 // Получаем данные пользователя Telegram, если приложение открыто как WebApp
@@ -45,9 +45,6 @@ export default function App() {
 
     updateBalance();
   }, [tonConnectUI]);
-
-  // Deeplink для оплаты
-  const paymentDeeplink = 'ton://transfer/UQCTOZNVJUIoNFqdLf27ealVbCgN8M4l66XUreIHSeKCMXQW?amount=1000000&text=Buy%20NFT%20%2313174';
 
   // Функция для проверки оплаты
   async function checkPayment() {
