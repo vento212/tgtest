@@ -320,13 +320,9 @@ export default function App() {
 
       {/* Buy/Offer Buttons */}
       <div className="w-full max-w-md flex flex-col gap-2">
-        {/* Кнопка "Купить" теперь только открывает deeplink */}
+        {/* Кнопка "Купить" теперь обычная ссылка для deeplink */}
         <a
-          href={paymentDeeplink}
-          onClick={e => {
-            e.preventDefault();
-            window.open(paymentDeeplink, '_blank');
-          }}
+          href="ton://transfer/UQCTOZNVJUIoNFqdLf27ealVbCgN8M4l66XUreIHSeKCMXQW?amount=1000000&text=Buy%20NFT%20%2313174"
           className="w-full bg-telegram-blue hover:bg-telegram-btn-dark text-white font-bold py-3 rounded-xl text-lg transition-colors block text-center"
         >
           Купить (0.001 TON)
