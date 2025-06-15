@@ -102,6 +102,30 @@ export default function App() {
     }
   };
 
+  // Функция для проверки оплаты
+  async function checkPayment() {
+    setMessage('Проверяю оплату...');
+    try {
+      const res = await fetch(`https://toncenter.com/api/v2/getTransactions?address=UQCTOZNVJUIoNFqdLf27ealVbCgN8M4l66XUreIHSeKCMXQW&limit=10`);
+      const data = await res.json();
+      // Ищем транзакцию с нужной суммой и комментарием
+      const found = data.result.find(tx =>
+        tx.in_msg &&
+        tx.in_msg.value === '1000000' && // 0.001 TON в nanoTON
+        tx.in_msg.message && tx.in_msg.message.includes('Buy NFT #13174')
+      );
+      if (found) {
+        setMessage('✅ Оплата найдена! Спасибо за покупку.');
+      } else {
+        setMessage('❌ Оплата не найдена. Попробуйте позже.');
+      }
+    } catch (e) {
+      setMessage('Ошибка при проверке оплаты: ' + (e.message || e));
+    } finally {
+      setTimeout(() => setMessage(''), 6000);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-telegram-dark flex flex-col items-center py-4">
       {/* Deposit Modal */}
@@ -356,7 +380,14 @@ export default function App() {
         >
           {isLoading ? 'Processing...' : 'Buy (0.001 TON)'}
         </button>
+        {/* Кнопка "Я оплатил" */}
         <button
+          onClick={checkPayment}
+          className="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 rounded-xl text-lg transition-colors mt-2"
+        >
+          Я оплатил
+        </button>
+        <button 
           onClick={handleOffer}
           disabled={isLoading || !walletInfo}
           className={`w-full bg-telegram-gray text-white font-bold py-3 rounded-xl text-lg border border-gray-600 hover:bg-telegram-dark transition-colors ${(!walletInfo || isLoading) ? 'opacity-50 cursor-not-allowed' : ''}`}
