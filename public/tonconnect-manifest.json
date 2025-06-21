@@ -1,0 +1,9 @@
+{
+  "url": "https://fancy-melomakarona-ceb24e.netlify.app/tonconnect-manifest.json",
+  "name": "TON NFT Marketplace",
+  "iconUrl": "https://fancy-melomakarona-ceb24e.netlify.app/logo192.png",
+  "termsOfUseUrl": "https://fancy-melomakarona-ceb24e.netlify.app/terms",
+  "privacyPolicyUrl": "https://fancy-melomakarona-ceb24e.netlify.app/privacy",
+  "features": ["ton_addr", "ton_proof", "ton_sign"],
+  "wallets": ["tonkeeper", "tonhub", "mytonwallet"]
+} 
