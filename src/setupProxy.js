@@ -1,16 +1,14 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function(app) {
+  // Отключаем source map warnings для Ton Connect
+  process.env.GENERATE_SOURCEMAP = 'false';
+  
   app.use(
-    '/tonconnect-manifest.json',
+    '/api',
     createProxyMiddleware({
-      target: 'http://localhost:3000',
+      target: 'http://localhost:3001',
       changeOrigin: true,
-      secure: false,
-      ws: true,
-      onProxyRes: function(proxyRes, req, res) {
-        proxyRes.headers['Access-Control-Allow-Origin'] = '*';
-      }
     })
   );
 }; 
