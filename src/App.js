@@ -59,9 +59,15 @@ export default function App() {
       setIsLoading(true);
       setMessage('Проверяю оплату...');
       
-      // Проверяем оплату напрямую через TON Center API
+      // Используем API ключ для проверки транзакций
+      const apiKey = process.env.REACT_APP_TONCENTER_API_KEY;
       const response = await fetch(
-        `https://toncenter.com/api/v2/getTransactions?address=${currentOrder.walletAddress}&limit=10`
+        `https://toncenter.com/api/v2/getTransactions?address=${currentOrder.walletAddress}&limit=10`,
+        {
+          headers: {
+            'X-API-Key': apiKey
+          }
+        }
       );
       
       if (!response.ok) {
@@ -104,9 +110,8 @@ export default function App() {
       const randomId = Math.random().toString(36).substring(2, 8);
       const comment = `Buy NFT #13174 - ${timestamp}_${randomId}`;
       
-      // Создаем deeplink для оплаты
-      // TODO: Замените на ваш реальный адрес TON кошелька
-      const walletAddress = 'UQCTOZNVJUIoNFqdLf27ealVbCgN8M4l66XUreIHSeKCMXQW'; 
+      // Используем адрес кошелька из переменных окружения
+      const walletAddress = process.env.REACT_APP_WALLET_ADDRESS || 'UQBlcF9j3mvxaLCKeB1APahO9wpqvd91BIn_mUgm9_lDE_4k';
       const amountNano = 1500000000; // 1.5 TON в nanoTON
       const deeplink = `ton://transfer/${walletAddress}?amount=${amountNano}&text=${encodeURIComponent(comment)}`;
       
