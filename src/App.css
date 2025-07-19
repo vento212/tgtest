@@ -7,4 +7,35 @@
   background-color: #006699;
 }
 
+/* Animation for development notice */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.9);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+.animate-fade-out {
+  animation: fadeOut 0.5s ease-in forwards;
+}
+
 /* Add any additional custom styles here */ 

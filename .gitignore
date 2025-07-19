@@ -85,3 +85,6 @@ src/setupTests.js
 
 # SSL certificates
 ssl/
+
+# Local Netlify folder
+.netlify
