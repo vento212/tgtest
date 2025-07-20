@@ -6,7 +6,7 @@
   NODE_VERSION = "18.17.0"
   NODE_OPTIONS = "--max_old_space_size=4096"
   GENERATE_SOURCEMAP = "false"
-  REACT_APP_BACKEND_URL = ""
+  REACT_APP_BACKEND_URL = "https://your-railway-url.up.railway.app"
   REACT_APP_MONGODB_ATLAS_URI = "mongodb+srv://tonnelque:cdcdcdcd@cluster0.mgg7dgs.mongodb.net/tgmarket?retryWrites=true&w=majority"
 
 [[redirects]]
@@ -16,5 +16,5 @@
 
 # Переменные окружения для продакшена
 [context.production.environment]
-  REACT_APP_BACKEND_URL = ""
+  REACT_APP_BACKEND_URL = "https://your-railway-url.up.railway.app"
   REACT_APP_MONGODB_ATLAS_URI = "mongodb+srv://tonnelque:cdcdcdcd@cluster0.mgg7dgs.mongodb.net/tgmarket?retryWrites=true&w=majority" 
