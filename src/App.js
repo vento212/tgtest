@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { GiftIcon, ShoppingCartIcon, UserCircleIcon, CurrencyDollarIcon, ViewColumnsIcon, ChartBarIcon, XMarkIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/outline';
+import { GiftIcon, ShoppingCartIcon, UserCircleIcon, CurrencyDollarIcon, ViewColumnsIcon, ChartBarIcon, XMarkIcon, PlusIcon, MinusIcon, DocumentTextIcon } from '@heroicons/react/24/outline';
 import MarketIcon from './icons/Market.png';
 import { useTonConnectUI } from '@tonconnect/ui-react';
 import telegramAuth from './telegram-auth';
@@ -626,10 +626,11 @@ export default function App() {
         {/* Навигация */}
         <div className="w-full max-w-md mb-4">
           <div className="bg-telegram-card rounded-2xl p-2">
-            <div className="grid grid-cols-5 gap-1">
+            <div className="grid grid-cols-6 gap-1">
               {[
                 { id: 'market', icon: ShoppingCartIcon, label: 'Market' },
                 { id: 'gallery', icon: ViewColumnsIcon, label: 'Gallery' },
+                { id: 'orders', icon: DocumentTextIcon, label: 'Orders' },
                 { id: 'auctions', icon: ChartBarIcon, label: 'Auctions' },
                 { id: 'gifts', icon: GiftIcon, label: 'Gifts' },
                 { id: 'profile', icon: UserCircleIcon, label: 'Profile' }
@@ -832,6 +833,44 @@ export default function App() {
                 <UserCircleIcon className="w-16 h-16 text-telegram-blue mx-auto mb-4" />
                 <p className="text-white text-lg font-semibold mb-2">Profile Not Available</p>
                 <p className="text-gray-400 text-sm">Please open this app in Telegram</p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'orders' && (
+          <div className="w-full max-w-md mb-4">
+            <h2 className="text-xl font-bold text-white mb-4">My Orders</h2>
+            {orders.length > 0 ? (
+              <div className="space-y-3">
+                {orders.map((order) => (
+                  <div key={order._id} className="bg-telegram-card rounded-xl p-4">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="text-white font-semibold">{order.itemName}</div>
+                      <div className={`text-sm px-2 py-1 rounded-full ${
+                        order.status === 'paid' ? 'bg-green-600 text-white' :
+                        order.status === 'pending' ? 'bg-yellow-600 text-white' :
+                        'bg-gray-600 text-white'
+                      }`}>
+                        {order.status === 'paid' ? 'Paid' : 
+                         order.status === 'pending' ? 'Pending' : 
+                         order.status}
+                      </div>
+                    </div>
+                    <div className="text-gray-400 text-sm mb-2">
+                      Amount: {order.amount} TON
+                    </div>
+                    <div className="text-gray-400 text-xs">
+                      {new Date(order.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-telegram-card rounded-2xl p-6 text-center">
+                <DocumentTextIcon className="w-16 h-16 text-telegram-blue mx-auto mb-4" />
+                <p className="text-white text-lg font-semibold mb-2">No Orders Yet</p>
+                <p className="text-gray-400 text-sm">Your order history will appear here</p>
               </div>
             )}
           </div>
