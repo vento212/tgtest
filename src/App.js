@@ -862,7 +862,7 @@ export default function App() {
                 <GiftIcon className="w-8 h-8 text-white" />
               </div>
               <div className="text-xl font-bold mb-2 text-white text-center">Send Gift</div>
-              <div className="text-gray-400 text-center mb-4">Enter recipient's username</div>
+              <div className="text-gray-400 text-center mb-4">Enter recipient&apos;s username</div>
               <input
                 type="text"
                 value={giftRecipient}
