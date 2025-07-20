@@ -10,6 +10,7 @@ import './App.css';
 const tgUser = telegramAuth.getUser();
 
 console.log('tgUser:', tgUser);
+console.log('Build timestamp:', new Date().toISOString()); // Принудительное обновление
 
 const marketItems = [
   {
