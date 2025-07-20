@@ -24,6 +24,18 @@ app.use((req, res, next) => {
     next();
 });
 
+// Middleware для обработки ошибок подключения к БД
+app.use((req, res, next) => {
+    if (mongoose.connection.readyState !== 1) {
+        console.error('❌ База данных не подключена');
+        return res.status(503).json({ 
+            error: 'Сервис временно недоступен',
+            details: 'База данных не подключена'
+        });
+    }
+    next();
+});
+
 // Middleware для обработки ошибок
 app.use((err, req, res, next) => {
     console.error('❌ Ошибка middleware:', err);
@@ -31,12 +43,25 @@ app.use((err, req, res, next) => {
 });
 
 // Подключение к MongoDB
-mongoose.connect('mongodb://localhost:27017/ton-payment-app', {
+const getMongoUri = () => {
+    if (process.env.NODE_ENV === 'production') {
+        return process.env.MONGODB_ATLAS_URI || process.env.MONGODB_URI;
+    }
+    return process.env.MONGODB_URI || 'mongodb://localhost:27017/ton-payment-app';
+};
+
+const mongoUri = getMongoUri();
+console.log(`🔗 Подключение к MongoDB: ${process.env.NODE_ENV === 'production' ? 'Atlas (Production)' : 'Local'}`);
+
+mongoose.connect(mongoUri, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
 })
 .then(() => console.log('✅ Подключено к MongoDB'))
-.catch(err => console.error('❌ Ошибка подключения к MongoDB:', err));
+.catch(err => {
+    console.error('❌ Ошибка подключения к MongoDB:', err);
+    console.log('💡 Убедитесь, что MongoDB запущен локально или настроен MongoDB Atlas');
+});
 
 // ===== API ENDPOINTS ДЛЯ ПОЛЬЗОВАТЕЛЕЙ =====
 

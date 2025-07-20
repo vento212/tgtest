@@ -122,6 +122,7 @@ export default function App() {
   const [depositAmount, setDepositAmount] = useState('');
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawAddress, setWithdrawAddress] = useState('');
+  const [orders, setOrders] = useState([]);
   
   // Состояние анимации
   const [isFadingOut, setIsFadingOut] = useState(false);
@@ -131,6 +132,38 @@ export default function App() {
   const walletInfo = tonConnectUI.account;
   const isConnected = !!walletInfo;
 
+  // Демо данные для режима без базы данных
+  const demoData = {
+    user: {
+      telegramId: 123456789,
+      username: 'demo_user',
+      firstName: 'Демо',
+      lastName: 'Пользователь',
+      photoUrl: null,
+      walletAddress: 'EQD4FPq-PRDieyQKkizFTRtSDyucUIqrjKvVmh2v9vXeJw8G',
+      isWalletConnected: true,
+      balance: 5.0,
+      lastActivity: new Date(),
+      createdAt: new Date()
+    },
+    orders: [
+      {
+        _id: 'demo_order_1',
+        itemName: 'Cosmic Warrior',
+        amount: 1.5,
+        status: 'paid',
+        createdAt: new Date(Date.now() - 86400000)
+      },
+      {
+        _id: 'demo_order_2',
+        itemName: 'Digital Art #123',
+        amount: 2.0,
+        status: 'pending',
+        createdAt: new Date()
+      }
+    ]
+  };
+
   // Инициализация Telegram WebApp
   useEffect(() => {
     const initTelegram = async () => {
@@ -139,6 +172,7 @@ export default function App() {
         if (success) {
           console.log('✅ Telegram WebApp инициализирован');
           await loadUserProfile();
+          await loadUserOrders();
         } else {
           console.warn('⚠️ Приложение запущено вне Telegram');
           setIsProfileLoading(false);
@@ -162,8 +196,12 @@ export default function App() {
       
       // Проверяем, есть ли данные Telegram
       if (!telegramAuth.isTelegramApp()) {
-        console.log('Приложение запущено вне Telegram, пропускаем загрузку профиля');
+        console.log('Приложение запущено вне Telegram, используем демо режим');
+        setUserProfile(demoData.user);
+        setUserBalance(demoData.user.balance);
+        setOrders(demoData.orders);
         setIsProfileLoading(false);
+        setMessage('Демо режим: данные не сохраняются');
         return;
       }
       
@@ -174,15 +212,49 @@ export default function App() {
     } catch (error) {
       console.error('❌ Ошибка загрузки профиля:', error);
       
-      // Если ошибка связана с отсутствием данных Telegram, не показываем ошибку
-      if (error.message.includes('TELEGRAM_DATA_MISSING') || error.message.includes('AUTH_ERROR')) {
+      // Если ошибка связана с базой данных, показываем демо режим
+      if (error.message.includes('База данных недоступна')) {
+        console.log('База данных недоступна, переключаемся в демо режим');
+        setUserProfile(demoData.user);
+        setUserBalance(demoData.user.balance);
+        setOrders(demoData.orders);
+        setMessage('Демо режим: база данных недоступна');
+      } else if (error.message.includes('TELEGRAM_DATA_MISSING') || error.message.includes('AUTH_ERROR')) {
         console.log('Данные Telegram недоступны, работаем в режиме демо');
+        setUserProfile(demoData.user);
+        setUserBalance(demoData.user.balance);
+        setOrders(demoData.orders);
         setMessage('Режим демо: некоторые функции недоступны без Telegram');
       } else {
         setMessage('Ошибка загрузки профиля: ' + error.message);
       }
     } finally {
       setIsProfileLoading(false);
+    }
+  };
+
+  // Загрузка заказов пользователя
+  const loadUserOrders = async () => {
+    try {
+      if (!telegramAuth.isTelegramApp()) {
+        console.log('Демо режим: используем демо заказы');
+        setOrders(demoData.orders);
+        return;
+      }
+      
+      const userOrders = await apiClient.getUserOrders();
+      setOrders(userOrders.orders);
+      console.log('✅ Заказы пользователя загружены:', userOrders);
+    } catch (error) {
+      console.error('❌ Ошибка загрузки заказов:', error);
+      
+      if (error.message.includes('База данных недоступна')) {
+        console.log('База данных недоступна, используем демо заказы');
+        setOrders(demoData.orders);
+        setMessage('Демо режим: заказы не сохраняются');
+      } else {
+        setMessage('Ошибка загрузки заказов: ' + error.message);
+      }
     }
   };
 

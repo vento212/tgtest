@@ -37,6 +37,11 @@ class ApiClient {
                     url: url
                 });
                 
+                // Специальная обработка ошибок базы данных
+                if (response.status === 503 && errorData.details?.includes('База данных')) {
+                    throw new Error('База данных недоступна. Обратитесь к администратору.');
+                }
+                
                 throw new Error(errorMessage);
             }
             
