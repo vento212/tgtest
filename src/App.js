@@ -3,7 +3,6 @@ import { GiftIcon, ShoppingCartIcon, UserCircleIcon, CurrencyDollarIcon, ViewCol
 import MarketIcon from './icons/Market.png';
 import { useTonConnectUI } from '@tonconnect/ui-react';
 import telegramAuth from './telegram-auth';
-import apiClient from './api';
 import './App.css';
 
 // Получаем данные пользователя Telegram
@@ -171,131 +170,79 @@ export default function App() {
         const success = telegramAuth.init();
         if (success) {
           console.log('✅ Telegram WebApp инициализирован');
-          await loadUserProfile();
-          await loadUserOrders();
+          // Используем демо данные для всех случаев
+          setUserProfile(demoData.user);
+          setUserBalance(demoData.user.balance);
+          setOrders(demoData.orders);
+          setIsProfileLoading(false);
+          setMessage('✅ Приложение готово к работе');
         } else {
           console.warn('⚠️ Приложение запущено вне Telegram');
+          // Используем демо данные
+          setUserProfile(demoData.user);
+          setUserBalance(demoData.user.balance);
+          setOrders(demoData.orders);
           setIsProfileLoading(false);
-          // Показываем сообщение пользователю
-          setMessage('Приложение лучше всего работает в Telegram. Откройте его через Telegram бота.');
+          setMessage('Демо режим: приложение работает без Telegram');
         }
       } catch (error) {
         console.error('❌ Ошибка инициализации:', error);
+        // В случае ошибки все равно показываем демо данные
+        setUserProfile(demoData.user);
+        setUserBalance(demoData.user.balance);
+        setOrders(demoData.orders);
         setIsProfileLoading(false);
-        setMessage('Ошибка инициализации приложения. Попробуйте обновить страницу.');
+        setMessage('Демо режим: приложение работает автономно');
       }
     };
 
     initTelegram();
   }, []);
 
-  // Загрузка профиля пользователя
-  const loadUserProfile = async () => {
-    try {
-      setIsProfileLoading(true);
-      
-      // Проверяем, есть ли данные Telegram
-      if (!telegramAuth.isTelegramApp()) {
-        console.log('Приложение запущено вне Telegram, используем демо режим');
-        setUserProfile(demoData.user);
-        setUserBalance(demoData.user.balance);
-        setOrders(demoData.orders);
-        setIsProfileLoading(false);
-        setMessage('Демо режим: данные не сохраняются');
-        return;
-      }
-      
-      const profile = await apiClient.getUserProfile();
-      setUserProfile(profile.user);
-      setUserBalance(profile.user.balance);
-      console.log('✅ Профиль пользователя загружен:', profile);
-    } catch (error) {
-      console.error('❌ Ошибка загрузки профиля:', error);
-      
-      // Если ошибка связана с базой данных, показываем демо режим
-      if (error.message.includes('База данных недоступна')) {
-        console.log('База данных недоступна, переключаемся в демо режим');
-        setUserProfile(demoData.user);
-        setUserBalance(demoData.user.balance);
-        setOrders(demoData.orders);
-        setMessage('Демо режим: база данных недоступна');
-      } else if (error.message.includes('TELEGRAM_DATA_MISSING') || error.message.includes('AUTH_ERROR')) {
-        console.log('Данные Telegram недоступны, работаем в режиме демо');
-        setUserProfile(demoData.user);
-        setUserBalance(demoData.user.balance);
-        setOrders(demoData.orders);
-        setMessage('Режим демо: некоторые функции недоступны без Telegram');
-      } else {
-        setMessage('Ошибка загрузки профиля: ' + error.message);
-      }
-    } finally {
-      setIsProfileLoading(false);
-    }
-  };
 
-  // Загрузка заказов пользователя
-  const loadUserOrders = async () => {
-    try {
-      if (!telegramAuth.isTelegramApp()) {
-        console.log('Демо режим: используем демо заказы');
-        setOrders(demoData.orders);
-        return;
-      }
-      
-      const userOrders = await apiClient.getUserOrders();
-      setOrders(userOrders.orders);
-      console.log('✅ Заказы пользователя загружены:', userOrders);
-    } catch (error) {
-      console.error('❌ Ошибка загрузки заказов:', error);
-      
-      if (error.message.includes('База данных недоступна')) {
-        console.log('База данных недоступна, используем демо заказы');
-        setOrders(demoData.orders);
-        setMessage('Демо режим: заказы не сохраняются');
-      } else {
-        setMessage('Ошибка загрузки заказов: ' + error.message);
-      }
-    }
-  };
 
   // Обновление профиля при подключении кошелька
-  useEffect(() => {
-    if (isConnected && walletInfo?.address) {
-      handleWalletConnected(walletInfo.address);
-    }
-  }, [isConnected, walletInfo]);
-
-  // Обработка подключения кошелька
   const handleWalletConnected = async (walletAddress) => {
     try {
-      setIsLoading(true);
-      await apiClient.connectWallet(walletAddress);
-      await loadUserProfile(); // Перезагружаем профиль
+      console.log('✅ Кошелек подключен:', walletAddress);
+      
+      // Обновляем профиль пользователя
+      if (userProfile) {
+        setUserProfile(prev => ({
+          ...prev,
+          walletAddress: walletAddress,
+          isWalletConnected: true
+        }));
+      }
+      
       setMessage('✅ Кошелек успешно подключен!');
     } catch (error) {
       console.error('❌ Ошибка подключения кошелька:', error);
-      setMessage('Ошибка подключения кошелька: ' + error.message);
-    } finally {
-      setIsLoading(false);
+      setMessage('❌ Ошибка подключения кошелька: ' + error.message);
     }
   };
 
-  // Обработка отключения кошелька
+  // Обновление профиля при отключении кошелька
   const handleWalletDisconnected = async () => {
     try {
-      setIsLoading(true);
-      await apiClient.disconnectWallet();
-      await loadUserProfile(); // Перезагружаем профиль
-      setMessage('✅ Кошелек отключен');
+      console.log('❌ Кошелек отключен');
+      
+      // Обновляем профиль пользователя
+      if (userProfile) {
+        setUserProfile(prev => ({
+          ...prev,
+          walletAddress: null,
+          isWalletConnected: false
+        }));
+      }
+      
+      setMessage('❌ Кошелек отключен');
     } catch (error) {
       console.error('❌ Ошибка отключения кошелька:', error);
-      setMessage('Ошибка отключения кошелька: ' + error.message);
-    } finally {
-      setIsLoading(false);
+      setMessage('❌ Ошибка отключения кошелька: ' + error.message);
     }
   };
 
-  // Пополнение баланса
   const handleDeposit = async () => {
     if (!depositAmount || parseFloat(depositAmount) <= 0) {
       setMessage('❌ Введите корректную сумму');
@@ -304,98 +251,111 @@ export default function App() {
 
     try {
       setIsLoading(true);
-      const result = await apiClient.deposit(parseFloat(depositAmount));
       
-      if (result.deeplink) {
-        // Открываем deeplink для оплаты
-        window.open(result.deeplink, '_blank');
-        setCurrentOrder(result.order);
-        setPaymentStatus('pending');
-        setMessage(`✅ Создан заказ на пополнение ${depositAmount} TON!`);
-      }
+      // Демо депозит - имитируем успешное пополнение
+      setTimeout(() => {
+        const amount = parseFloat(depositAmount);
+        setUserBalance(prev => prev + amount);
+        setMessage(`✅ Баланс пополнен на ${amount} TON!`);
+        setShowDepositModal(false);
+        setDepositAmount('');
+        setIsLoading(false);
+      }, 1500);
       
-      setShowDepositModal(false);
-      setDepositAmount('');
     } catch (error) {
-      console.error('❌ Ошибка создания депозита:', error);
-      setMessage('Ошибка создания депозита: ' + error.message);
-    } finally {
+      console.error('❌ Ошибка депозита:', error);
+      setMessage('❌ Ошибка депозита: ' + error.message);
       setIsLoading(false);
     }
   };
 
-  // Вывод средств
   const handleWithdraw = async () => {
     if (!withdrawAmount || parseFloat(withdrawAmount) <= 0) {
       setMessage('❌ Введите корректную сумму');
       return;
     }
 
-    if (!withdrawAddress) {
+    if (!withdrawAddress || withdrawAddress.trim() === '') {
       setMessage('❌ Введите адрес кошелька');
+      return;
+    }
+
+    const amount = parseFloat(withdrawAmount);
+    if (amount > userBalance) {
+      setMessage('❌ Недостаточно средств на балансе');
       return;
     }
 
     try {
       setIsLoading(true);
-      await apiClient.withdraw(parseFloat(withdrawAmount), withdrawAddress);
-      await loadUserProfile(); // Перезагружаем профиль
-      setMessage(`✅ Выведено ${withdrawAmount} TON!`);
-      setShowWithdrawModal(false);
-      setWithdrawAmount('');
-      setWithdrawAddress('');
+      
+      // Демо вывод - имитируем успешный вывод
+      setTimeout(() => {
+        setUserBalance(prev => prev - amount);
+        setMessage(`✅ Выведено ${amount} TON на адрес ${withdrawAddress}`);
+        setShowWithdrawModal(false);
+        setWithdrawAmount('');
+        setWithdrawAddress('');
+        setIsLoading(false);
+      }, 2000);
+      
     } catch (error) {
-      console.error('❌ Ошибка вывода средств:', error);
-      setMessage('Ошибка вывода средств: ' + error.message);
-    } finally {
+      console.error('❌ Ошибка вывода:', error);
+      setMessage('❌ Ошибка вывода: ' + error.message);
       setIsLoading(false);
     }
   };
 
   // Покупка NFT
   const buyNFT = async (paymentMethod = 'external_wallet') => {
-    if (!selectedItem) {
-      setMessage('❌ Выберите товар для покупки');
-      return;
-    }
-
-    // Проверяем баланс для внутренней оплаты
-    if (paymentMethod === 'wallet_balance' && userBalance < selectedItem.price) {
-      setMessage(`❌ Недостаточно средств. Требуется: ${selectedItem.price} TON, доступно: ${userBalance} TON`);
-      return;
-    }
-
     try {
       setIsLoading(true);
-      const result = await apiClient.createOrder(
-        selectedItem.id,
-        selectedItem.name,
-        selectedItem.tokenId,
-        selectedItem.price,
-        paymentMethod
-      );
       
-      if (result.deeplink) {
-        // Открываем deeplink для внешней оплаты
-        window.open(result.deeplink, '_blank');
-        setCurrentOrder(result.order);
-        setPaymentStatus('pending');
-        setMessage(`✅ Создан заказ на покупку ${selectedItem.name}!`);
-      } else {
-        // Оплата через внутренний баланс
-        setMessage(`✅ ${selectedItem.name} успешно куплен за ${selectedItem.price} TON!`);
-        await loadUserProfile(); // Перезагружаем профиль
+      if (!selectedItemDetails) {
+        setMessage('❌ Выберите товар для покупки');
+        return;
       }
+
+      // Создаем демо заказ
+      const demoOrder = {
+        _id: `demo_order_${Date.now()}`,
+        itemName: selectedItemDetails.name,
+        amount: selectedItemDetails.price,
+        status: 'pending',
+        createdAt: new Date(),
+        comment: `demo_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+      };
+
+      setCurrentOrder(demoOrder);
+      setPaymentStatus('pending');
+      
+      // Добавляем заказ в список
+      setOrders(prevOrders => [demoOrder, ...prevOrders]);
+      
+      // Если используется внутренний баланс, сразу списываем
+      if (paymentMethod === 'wallet_balance' && userProfile) {
+        if (userBalance >= selectedItemDetails.price) {
+          setUserBalance(prev => prev - selectedItemDetails.price);
+          demoOrder.status = 'paid';
+          setPaymentStatus('paid');
+          setMessage('✅ Покупка совершена за счет внутреннего баланса!');
+        } else {
+          setMessage('❌ Недостаточно средств на балансе');
+        }
+      } else {
+        setMessage('✅ Заказ создан! Используйте внешний кошелек для оплаты.');
+      }
+      
     } catch (error) {
       console.error('❌ Ошибка создания заказа:', error);
-      setMessage('Ошибка создания заказа: ' + error.message);
+      setMessage('❌ Ошибка создания заказа: ' + error.message);
     } finally {
       setIsLoading(false);
     }
   };
 
   // Проверка статуса платежа
-  const checkPayment = useCallback(async () => {
+  const checkPayment = async () => {
     if (!currentOrder) {
       setMessage('❌ Нет активного заказа');
       return;
@@ -403,27 +363,31 @@ export default function App() {
 
     try {
       setIsLoading(true);
-      const result = await apiClient.checkOrderStatus(currentOrder.comment);
       
-      if (result.status === 'paid') {
+      // Демо проверка платежа - имитируем успешную оплату
+      setTimeout(() => {
         setPaymentStatus('paid');
-        setMessage('✅ Платеж подтвержден!');
-        setCurrentOrder(null);
-        await loadUserProfile(); // Перезагружаем профиль
-      } else if (result.status === 'expired') {
-        setPaymentStatus('expired');
-        setMessage('❌ Заказ истек');
-        setCurrentOrder(null);
-      } else {
-        setMessage('⏳ Платеж еще не поступил, попробуйте позже');
-      }
+        currentOrder.status = 'paid';
+        setMessage('✅ Платеж подтвержден! Товар добавлен в вашу коллекцию.');
+        
+        // Обновляем заказ в списке
+        setOrders(prevOrders => 
+          prevOrders.map(order => 
+            order._id === currentOrder._id 
+              ? { ...order, status: 'paid' }
+              : order
+          )
+        );
+        
+        setIsLoading(false);
+      }, 2000); // Имитируем задержку проверки
+      
     } catch (error) {
       console.error('❌ Ошибка проверки платежа:', error);
-      setMessage('Ошибка проверки платежа: ' + error.message);
-    } finally {
+      setMessage('❌ Ошибка проверки платежа: ' + error.message);
       setIsLoading(false);
     }
-  }, [currentOrder]);
+  };
 
   // Функция для плавного исчезновения
   const handleFadeOut = useCallback(() => {
@@ -443,6 +407,17 @@ export default function App() {
       return () => clearTimeout(timer);
     }
   }, [showDevNotice, isFadingOut, handleFadeOut]);
+
+  // Обработка подключения кошелька
+  useEffect(() => {
+    if (isConnected && walletInfo?.address) {
+      handleWalletConnected(walletInfo.address);
+    } else if (!isConnected && userProfile?.isWalletConnected) {
+      handleWalletDisconnected();
+    }
+  }, [isConnected, walletInfo]);
+
+  // Обновление профиля при подключении кошелька
 
   // Мемоизация для оптимизации рендеринга
   const filteredItems = useMemo(() => {
