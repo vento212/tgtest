@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { GiftIcon, ShoppingCartIcon, UserCircleIcon, CurrencyDollarIcon, ViewColumnsIcon, ChartBarIcon, XMarkIcon, PlusIcon, MinusIcon } from '@heroicons/react/24/outline';
 import MarketIcon from './icons/Market.png';
 import { useTonConnectUI } from '@tonconnect/ui-react';
@@ -110,27 +110,17 @@ export default function App() {
   
   const [tonConnectUI] = useTonConnectUI();
 
-  // Автоматически скрыть уведомление через 5 секунд
-  useEffect(() => {
-    if (showDevNotice) {
-      const timer = setTimeout(() => {
-        setShowDevNotice(false);
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [showDevNotice]);
-
   // Состояние для анимации исчезновения
   const [isFadingOut, setIsFadingOut] = useState(false);
 
   // Функция для плавного исчезновения
-  const handleFadeOut = () => {
+  const handleFadeOut = useCallback(() => {
     setIsFadingOut(true);
     setTimeout(() => {
       setShowDevNotice(false);
       setIsFadingOut(false);
     }, 500);
-  };
+  }, []);
 
   // Автоматическое исчезновение с анимацией
   useEffect(() => {
@@ -143,6 +133,15 @@ export default function App() {
   }, [showDevNotice, isFadingOut]);
   const walletInfo = tonConnectUI.account;
   const isConnected = !!walletInfo;
+
+  // Мемоизация для оптимизации рендеринга
+  const filteredItems = useMemo(() => {
+    return marketItems;
+  }, []);
+
+  const selectedItemDetails = useMemo(() => {
+    return selectedItem;
+  }, [selectedItem]);
   const [showGiftModal, setShowGiftModal] = useState(false);
   const [giftRecipient, setGiftRecipient] = useState('');
   const [showDepositModal, setShowDepositModal] = useState(false);
@@ -152,14 +151,22 @@ export default function App() {
   // Подписываемся на изменения состояния кошелька
   useEffect(() => {
     const updateBalance = async () => {
-      if (tonConnectUI.account) {
+      if (tonConnectUI.account && tonConnectUI.account.address) {
         try {
           setIsLoading(true);
           const balance = await getBalance(tonConnectUI.account.address);
-          setBalance(balance);
+          
+          // Валидация баланса
+          if (typeof balance === 'number' && balance >= 0) {
+            setBalance(balance);
+          } else {
+            setBalance(0);
+            console.warn('Invalid balance received:', balance);
+          }
         } catch (error) {
           console.error('Error fetching balance:', error);
-          setMessage('Error fetching balance');
+          setBalance(0);
+          setMessage('Ошибка получения баланса: ' + (error.message || 'Неизвестная ошибка'));
         } finally {
           setIsLoading(false);
         }
@@ -169,12 +176,18 @@ export default function App() {
     };
 
     updateBalance();
-  }, [tonConnectUI]);
+  }, [tonConnectUI.account]);
 
   // Функция проверки оплаты - упрощенная версия
-  async function checkPayment() {
+  const checkPayment = useCallback(async () => {
     if (!currentOrder) {
       setMessage('❌ Сначала нажмите "Купить"!');
+      return;
+    }
+
+    // Валидация данных заказа
+    if (!currentOrder.walletAddress || !currentOrder.amountNano || !currentOrder.comment) {
+      setMessage('❌ Неполные данные заказа!');
       return;
     }
 
@@ -184,8 +197,13 @@ export default function App() {
       
       // Используем API ключ для проверки транзакций
       const apiKey = process.env.REACT_APP_TONCENTER_API_KEY;
+      
+      if (!apiKey) {
+        throw new Error('API ключ не настроен');
+      }
+      
       const response = await fetch(
-        `https://toncenter.com/api/v2/getTransactions?address=${currentOrder.walletAddress}&limit=10`,
+        `https://toncenter.com/api/v2/getTransactions?address=${encodeURIComponent(currentOrder.walletAddress)}&limit=10`,
         {
           headers: {
             'X-API-Key': apiKey
@@ -198,6 +216,11 @@ export default function App() {
       }
 
       const data = await response.json();
+      
+      if (!data.result || !Array.isArray(data.result)) {
+        throw new Error('Неверный формат ответа от API');
+      }
+      
       const transactions = data.result;
       
       // Ищем транзакцию с нужной суммой и комментарием
@@ -211,24 +234,35 @@ export default function App() {
       if (payment) {
         setPaymentStatus('paid');
         setMessage('✅ Оплата найдена! Спасибо за покупку.');
-        setCurrentOrder(null); // Сбрасываем заказ после успешной оплаты
+        setCurrentOrder(null); // бсрос товара
       } else {
         setPaymentStatus('pending');
         setMessage('❌ Оплата не найдена. Попробуйте позже.');
       }
     } catch (error) {
       console.error('Error checking payment:', error);
-      setMessage('❌ Ошибка при проверке оплаты: ' + error.message);
+      setMessage('❌ Ошибка при проверке оплаты: ' + (error.message || 'Неизвестная ошибка'));
     } finally {
       setIsLoading(false);
       setTimeout(() => setMessage(''), 6000);
     }
-  }
+  }, [currentOrder]);
 
   // Функция покупки NFT - упрощенная версия
-  async function buyNFT() {
+  const buyNFT = useCallback(async () => {
     if (!selectedItem) {
       setMessage('❌ Выберите товар для покупки!');
+      return;
+    }
+
+    // Валидация данных товара
+    if (!selectedItem.price || selectedItem.price <= 0) {
+      setMessage('❌ Неверная цена товара!');
+      return;
+    }
+
+    if (!selectedItem.tokenId) {
+      setMessage('❌ Отсутствует ID товара!');
       return;
     }
 
@@ -240,7 +274,21 @@ export default function App() {
       
       // Используем адрес кошелька из переменных окружения
       const walletAddress = process.env.REACT_APP_WALLET_ADDRESS || 'UQBlcF9j3mvxaLCKeB1APahO9wpqvd91BIn_mUgm9_lDE_4k';
+      
+      // Валидация адреса кошелька
+      if (!walletAddress || walletAddress.length < 10) {
+        setMessage('❌ Неверный адрес кошелька!');
+        return;
+      }
+      
       const amountNano = Math.floor(selectedItem.price * 1000000000); // Конвертируем цену в nanoTON
+      
+      // Валидация суммы
+      if (amountNano <= 0) {
+        setMessage('❌ Неверная сумма платежа!');
+        return;
+      }
+      
       const deeplink = `ton://transfer/${walletAddress}?amount=${amountNano}&text=${encodeURIComponent(comment)}`;
       
       // Открываем deeplink
@@ -265,9 +313,9 @@ export default function App() {
       
     } catch (error) {
       console.error('Failed to create payment link:', error);
-      setMessage('❌ Ошибка создания ссылки для оплаты');
+      setMessage('❌ Ошибка создания ссылки для оплаты: ' + (error.message || 'Неизвестная ошибка'));
     }
-  }
+  }, [selectedItem]);
 
   return (
     <div className="min-h-screen bg-telegram-dark flex flex-col items-center py-4">
@@ -475,7 +523,7 @@ export default function App() {
           <h2 className="text-xl font-bold text-white mb-4">Market</h2>
           {isConnected ? (
             <div className="grid grid-cols-2 gap-3 mb-4">
-              {marketItems.map((item) => (
+              {filteredItems.map((item) => (
                 <div
                   key={item.id}
                   className={`bg-telegram-card rounded-xl p-3 cursor-pointer transition-all duration-200 ${
@@ -528,7 +576,7 @@ export default function App() {
           <h2 className="text-xl font-bold text-white mb-4">Gallery</h2>
           {isConnected ? (
             <div className="grid grid-cols-2 gap-3 mb-4">
-              {marketItems.map((item) => (
+              {filteredItems.map((item) => (
                 <div
                   key={item.id}
                   className={`bg-telegram-card rounded-xl p-3 cursor-pointer transition-all duration-200 ${
@@ -621,12 +669,12 @@ export default function App() {
       )}
 
       {/* Selected NFT Card - только для Market и Gallery */}
-      {selectedItem && (activeTab === 'market' || activeTab === 'gallery') && isConnected && (
+      {selectedItemDetails && (activeTab === 'market' || activeTab === 'gallery') && isConnected && (
         <div className="w-full max-w-md bg-telegram-card rounded-2xl shadow-lg p-4 mb-4">
           <div className="relative rounded-xl overflow-hidden mb-4">
-            {selectedItem.type === 'video' ? (
+            {selectedItemDetails.type === 'video' ? (
               <video
-                src={selectedItem.image}
+                src={selectedItemDetails.image}
                 autoPlay
                 loop
                 muted
@@ -635,8 +683,8 @@ export default function App() {
               />
             ) : (
               <img
-                src={selectedItem.image}
-                alt={selectedItem.name}
+                src={selectedItemDetails.image}
+                alt={selectedItemDetails.name}
                 className="w-full h-64 object-cover rounded-xl"
               />
             )}
@@ -647,25 +695,25 @@ export default function App() {
             <ShoppingCartIcon className="w-8 h-8 text-telegram-blue absolute right-2 bottom-2 bg-white rounded-full p-1" />
           </div>
           <div className="flex items-center justify-between mb-1">
-            <span className="text-xl font-bold text-white">{selectedItem.name}</span>
-            <span className="text-gray-400 font-semibold">{selectedItem.tokenId}</span>
+            <span className="text-xl font-bold text-white">{selectedItemDetails.name}</span>
+            <span className="text-gray-400 font-semibold">{selectedItemDetails.tokenId}</span>
           </div>
           <div className="space-y-1 mb-4">
             <div className="flex items-center text-white text-sm">
               <span className="w-24 font-normal">Model</span>
-              <span className="text-telegram-blue font-semibold ml-2">{selectedItem.attributes.model}</span>
+              <span className="text-telegram-blue font-semibold ml-2">{selectedItemDetails.attributes.model}</span>
             </div>
             <div className="flex items-center text-white text-sm">
               <span className="w-24 font-bold">Symbol</span>
-              <span className="text-telegram-blue font-semibold ml-2">{selectedItem.attributes.symbol}</span>
+              <span className="text-telegram-blue font-semibold ml-2">{selectedItemDetails.attributes.symbol}</span>
             </div>
             <div className="flex items-center text-white text-sm">
               <span className="w-24 font-normal">Backdrop</span>
-              <span className="text-telegram-blue font-semibold ml-2">{selectedItem.attributes.backdrop}</span>
+              <span className="text-telegram-blue font-semibold ml-2">{selectedItemDetails.attributes.backdrop}</span>
             </div>
             <div className="flex items-center text-white text-sm">
               <span className="w-24 font-bold">Mintable</span>
-              <span className="text-telegram-blue font-semibold ml-2">{selectedItem.attributes.mintable}</span>
+              <span className="text-telegram-blue font-semibold ml-2">{selectedItemDetails.attributes.mintable}</span>
             </div>
           </div>
         </div>
@@ -733,13 +781,13 @@ export default function App() {
       {(activeTab === 'market' || activeTab === 'gallery') && isConnected && (
         <div className="w-full max-w-md flex flex-col gap-2">
           {/* Кнопка "Купить" теперь создает заказ через бэкенд */}
-          <button
-            onClick={buyNFT}
-            disabled={isLoading || !selectedItem}
-            className={`w-full bg-telegram-blue hover:bg-telegram-btn-dark text-white font-bold py-3 rounded-xl text-lg transition-colors ${(isLoading || !selectedItem) ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            {isLoading ? 'Создаю заказ...' : selectedItem ? `Купить (${selectedItem.price} TON)` : 'Выберите товар'}
-          </button>
+                  <button
+          onClick={buyNFT}
+          disabled={isLoading || !selectedItemDetails}
+          className={`w-full bg-telegram-blue hover:bg-telegram-btn-dark text-white font-bold py-3 rounded-xl text-lg transition-colors ${(isLoading || !selectedItemDetails) ? 'opacity-50 cursor-not-allowed' : ''}`}
+        >
+          {isLoading ? 'Создаю заказ...' : selectedItemDetails ? `Купить (${selectedItemDetails.price} TON)` : 'Выберите товар'}
+        </button>
           
           {/* Показываем информацию о текущем заказе */}
           {currentOrder && (

@@ -14,7 +14,19 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Ограничение размера JSON
+
+// Middleware для логирования запросов
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+    next();
+});
+
+// Middleware для обработки ошибок
+app.use((err, req, res, next) => {
+    console.error('❌ Ошибка middleware:', err);
+    res.status(500).json({ error: 'Внутренняя ошибка сервера' });
+});
 
 // Подключение к MongoDB
 mongoose.connect('mongodb://localhost:27017/ton-payment-app', {
@@ -29,8 +41,14 @@ app.post('/api/orders', async (req, res) => {
     try {
         const { amount } = req.body;
         
-        if (!amount || amount <= 0) {
+        // Валидация входных данных
+        if (!amount || typeof amount !== 'number' || amount <= 0) {
             return res.status(400).json({ error: 'Неверная сумма' });
+        }
+
+        // Ограничение максимальной суммы
+        if (amount > 1000) {
+            return res.status(400).json({ error: 'Сумма слишком большая' });
         }
 
         // Генерируем уникальный комментарий
@@ -41,13 +59,19 @@ app.post('/api/orders', async (req, res) => {
         // Конвертируем TON в nanoTON
         const amountNano = Math.floor(amount * 1000000000);
         
+        // Валидация адреса кошелька
+        const walletAddress = process.env.WALLET_ADDRESS || 'EQD4FPq-PRDieyQKkizFTRtSDyucUIqrjKvVmh2v9vXeJw8G';
+        if (!walletAddress || walletAddress.length < 10) {
+            return res.status(500).json({ error: 'Неверный адрес кошелька' });
+        }
+        
         // Создаем заказ в MongoDB
         const order = new Order({
             amount: amount,
             amountNano: amountNano,
             comment: comment,
             status: 'pending',
-            walletAddress: process.env.WALLET_ADDRESS || 'EQD4FPq-PRDieyQKkizFTRtSDyucUIqrjKvVmh2v9vXeJw8G'
+            walletAddress: walletAddress
         });
         
         await order.save();
@@ -57,7 +81,7 @@ app.post('/api/orders', async (req, res) => {
         
     } catch (error) {
         console.error('❌ Ошибка создания заказа:', error);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(500).json({ error: 'Ошибка сервера: ' + (error.message || 'Неизвестная ошибка') });
     }
 });
 
@@ -65,6 +89,11 @@ app.post('/api/orders', async (req, res) => {
 app.get('/api/orders/:comment/status', async (req, res) => {
     try {
         const { comment } = req.params;
+        
+        // Валидация комментария
+        if (!comment || typeof comment !== 'string' || comment.length < 10) {
+            return res.status(400).json({ error: 'Неверный комментарий заказа' });
+        }
         
         // Получаем заказ из MongoDB
         const order = await Order.findOne({ comment: comment });
@@ -83,7 +112,18 @@ app.get('/api/orders/:comment/status', async (req, res) => {
         const expectedAmount = order.amountNano;
         const expectedComment = order.comment;
         
+        // Валидация данных заказа
+        if (!walletAddress || !expectedAmount || !expectedComment) {
+            return res.status(500).json({ error: 'Неполные данные заказа' });
+        }
+        
         try {
+            const apiKey = process.env.TONCENTER_API_KEY;
+            if (!apiKey || apiKey === 'your_toncenter_api_key_here') {
+                console.warn('⚠️ API ключ TON Center не настроен');
+                return res.json({ status: 'pending' });
+            }
+            
             const response = await axios.get(
                 `${process.env.TONCENTER_BASE_URL || 'https://toncenter.com/api/v2'}/getTransactions`,
                 {
@@ -92,10 +132,15 @@ app.get('/api/orders/:comment/status', async (req, res) => {
                         limit: 10
                     },
                     headers: {
-                        'X-API-Key': process.env.TONCENTER_API_KEY || 'test'
-                    }
+                        'X-API-Key': apiKey
+                    },
+                    timeout: 10000 // 10 секунд таймаут
                 }
             );
+            
+            if (!response.data || !response.data.result) {
+                throw new Error('Неверный формат ответа от API');
+            }
             
             const transactions = response.data.result;
             
@@ -126,7 +171,7 @@ app.get('/api/orders/:comment/status', async (req, res) => {
         
     } catch (error) {
         console.error('❌ Ошибка проверки статуса:', error);
-        res.status(500).json({ error: 'Ошибка сервера' });
+        res.status(500).json({ error: 'Ошибка сервера: ' + (error.message || 'Неизвестная ошибка') });
     }
 });
 
