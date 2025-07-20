@@ -134,13 +134,21 @@ export default function App() {
   // Инициализация Telegram WebApp
   useEffect(() => {
     const initTelegram = async () => {
-      const success = telegramAuth.init();
-      if (success) {
-        console.log('✅ Telegram WebApp инициализирован');
-        await loadUserProfile();
-      } else {
-        console.warn('⚠️ Приложение запущено вне Telegram');
+      try {
+        const success = telegramAuth.init();
+        if (success) {
+          console.log('✅ Telegram WebApp инициализирован');
+          await loadUserProfile();
+        } else {
+          console.warn('⚠️ Приложение запущено вне Telegram');
+          setIsProfileLoading(false);
+          // Показываем сообщение пользователю
+          setMessage('Приложение лучше всего работает в Telegram. Откройте его через Telegram бота.');
+        }
+      } catch (error) {
+        console.error('❌ Ошибка инициализации:', error);
         setIsProfileLoading(false);
+        setMessage('Ошибка инициализации приложения. Попробуйте обновить страницу.');
       }
     };
 
@@ -151,13 +159,28 @@ export default function App() {
   const loadUserProfile = async () => {
     try {
       setIsProfileLoading(true);
+      
+      // Проверяем, есть ли данные Telegram
+      if (!telegramAuth.isTelegramApp()) {
+        console.log('Приложение запущено вне Telegram, пропускаем загрузку профиля');
+        setIsProfileLoading(false);
+        return;
+      }
+      
       const profile = await apiClient.getUserProfile();
       setUserProfile(profile.user);
       setUserBalance(profile.user.balance);
       console.log('✅ Профиль пользователя загружен:', profile);
     } catch (error) {
       console.error('❌ Ошибка загрузки профиля:', error);
-      setMessage('Ошибка загрузки профиля: ' + error.message);
+      
+      // Если ошибка связана с отсутствием данных Telegram, не показываем ошибку
+      if (error.message.includes('TELEGRAM_DATA_MISSING') || error.message.includes('AUTH_ERROR')) {
+        console.log('Данные Telegram недоступны, работаем в режиме демо');
+        setMessage('Режим демо: некоторые функции недоступны без Telegram');
+      } else {
+        setMessage('Ошибка загрузки профиля: ' + error.message);
+      }
     } finally {
       setIsProfileLoading(false);
     }
@@ -364,6 +387,7 @@ export default function App() {
       return (
         <div className="flex items-center justify-center p-4">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-telegram-blue"></div>
+          <span className="ml-2 text-gray-400">Загрузка профиля...</span>
         </div>
       );
     }
@@ -392,6 +416,16 @@ export default function App() {
             <div className="text-telegram-blue font-bold">{userBalance.toFixed(2)} TON</div>
             <div className="text-gray-400 text-xs">Баланс</div>
           </div>
+        </div>
+      );
+    }
+
+    // Если приложение запущено вне Telegram
+    if (!telegramAuth.isTelegramApp()) {
+      return (
+        <div className="p-4 bg-telegram-card rounded-xl text-center">
+          <div className="text-gray-400 mb-2">Приложение лучше всего работает в Telegram</div>
+          <div className="text-sm text-gray-500">Откройте через Telegram бота для полного функционала</div>
         </div>
       );
     }
@@ -434,8 +468,22 @@ export default function App() {
 
         {/* Сообщения */}
         {message && (
-          <div className="mb-4 p-3 bg-telegram-card rounded-xl border border-telegram-blue">
+          <div className={`mb-4 p-3 rounded-xl border ${
+            message.includes('✅') || message.includes('успешно') 
+              ? 'bg-green-900/20 border-green-500 text-green-300' 
+              : message.includes('❌') || message.includes('Ошибка')
+              ? 'bg-red-900/20 border-red-500 text-red-300'
+              : 'bg-telegram-card border-telegram-blue'
+          }`}>
             <div className="text-sm">{message}</div>
+            {message.includes('Ошибка') && (
+              <button 
+                onClick={() => setMessage('')}
+                className="mt-2 text-xs text-gray-400 hover:text-white"
+              >
+                Скрыть
+              </button>
+            )}
           </div>
         )}
 

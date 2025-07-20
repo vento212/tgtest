@@ -27,12 +27,28 @@ class ApiClient {
             
             if (!response.ok) {
                 const errorData = await response.json().catch(() => ({}));
-                throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+                const errorMessage = errorData.error || `HTTP ${response.status}: ${response.statusText}`;
+                
+                // Логируем ошибку для отладки
+                console.error(`API Error (${endpoint}):`, {
+                    status: response.status,
+                    statusText: response.statusText,
+                    error: errorData,
+                    url: url
+                });
+                
+                throw new Error(errorMessage);
             }
             
             return await response.json();
         } catch (error) {
             console.error(`❌ API Error (${endpoint}):`, error);
+            
+            // Если это ошибка сети, добавляем дополнительную информацию
+            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                throw new Error(`Ошибка подключения к серверу. Убедитесь, что бэкенд запущен на ${this.baseURL}`);
+            }
+            
             throw error;
         }
     }
