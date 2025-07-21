@@ -8,11 +8,33 @@ const authenticateTelegram = async (req, res, next) => {
         const telegramData = req.headers['x-telegram-data'] || req.body.telegramData;
         const telegramHash = req.headers['x-telegram-hash'] || req.body.telegramHash;
         
+        // Если нет данных Telegram, создаем временного пользователя для веб-версии
         if (!telegramData || !telegramHash) {
-            return res.status(401).json({ 
-                error: 'Отсутствуют данные Telegram',
-                code: 'TELEGRAM_DATA_MISSING'
-            });
+            console.warn('⚠️ Отсутствуют данные Telegram - создаем временного пользователя');
+            
+            // Создаем временного пользователя для веб-версии
+            let user = await User.findOne({ telegramId: 999999999 }); // Временный ID для веб-версии
+            
+            if (!user) {
+                user = new User({
+                    telegramId: 999999999,
+                    username: 'web_user',
+                    firstName: 'Web',
+                    lastName: 'User'
+                });
+                await user.save();
+                console.log('✅ Создан временный пользователь для веб-версии');
+            }
+            
+            req.user = user;
+            req.telegramUser = {
+                id: 999999999,
+                username: 'web_user',
+                first_name: 'Web',
+                last_name: 'User'
+            };
+            
+            return next();
         }
 
         // Проверяем подпись Telegram (в продакшене нужно использовать реальный токен бота)
