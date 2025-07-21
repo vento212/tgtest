@@ -45,6 +45,7 @@ export default function App() {
   const [depositAmount, setDepositAmount] = useState('');
   const [purchasedItems, setPurchasedItems] = useState([]);
   const [showDevNotice, setShowDevNotice] = useState(true);
+  const [debugInfo, setDebugInfo] = useState('');
 
   // TON Connect
   const [tonConnectUI] = useTonConnectUI();
@@ -55,83 +56,63 @@ export default function App() {
   useEffect(() => {
     console.log('🚀 Приложение запущено');
     
-    // Функция для получения данных пользователя
-    const getUserData = () => {
+    const initApp = () => {
+      let debugText = 'Отладка:\n';
+      
+      // Проверяем Telegram WebApp
       if (window.Telegram?.WebApp) {
         const webApp = window.Telegram.WebApp;
-        console.log('✅ Telegram WebApp найден');
+        debugText += '✅ Telegram WebApp найден\n';
         
         // Расширяем приложение
-        webApp.expand();
+        try {
+          webApp.expand();
+          debugText += '✅ Приложение расширено\n';
+        } catch (error) {
+          debugText += `❌ Ошибка расширения: ${error}\n`;
+        }
         
-        // Пробуем разные способы получения пользователя
+        // Показываем все доступные данные
+        debugText += `📱 Платформа: ${webApp.platform}\n`;
+        debugText += `🌐 Версия: ${webApp.version}\n`;
+        debugText += `📊 Viewport: ${webApp.viewportHeight}x${webApp.viewportStableHeight}\n`;
+        
+        // Пробуем получить пользователя
         let user = null;
         
-        // Способ 1: initDataUnsafe.user
         if (webApp.initDataUnsafe?.user) {
           user = webApp.initDataUnsafe.user;
-          console.log('👤 Пользователь из initDataUnsafe:', user);
-        }
-        
-        // Способ 2: initDataUnsafe.user_info
-        if (!user && webApp.initDataUnsafe?.user_info) {
+          debugText += '✅ Пользователь из initDataUnsafe.user\n';
+        } else if (webApp.initDataUnsafe?.user_info) {
           user = webApp.initDataUnsafe.user_info;
-          console.log('👤 Пользователь из user_info:', user);
+          debugText += '✅ Пользователь из initDataUnsafe.user_info\n';
+        } else {
+          debugText += '❌ Пользователь не найден в initDataUnsafe\n';
         }
         
-        // Способ 3: парсим initData
-        if (!user && webApp.initData) {
-          try {
-            const params = new URLSearchParams(webApp.initData);
-            const userParam = params.get('user');
-            if (userParam) {
-              user = JSON.parse(decodeURIComponent(userParam));
-              console.log('👤 Пользователь из initData:', user);
-            }
-          } catch (error) {
-            console.log('❌ Ошибка парсинга initData:', error);
-          }
-        }
-        
-        // Способ 4: ищем в URL параметрах
-        if (!user) {
-          const urlParams = new URLSearchParams(window.location.search);
-          const userParam = urlParams.get('user');
-          if (userParam) {
-            try {
-              user = JSON.parse(decodeURIComponent(userParam));
-              console.log('👤 Пользователь из URL:', user);
-            } catch (error) {
-              console.log('❌ Ошибка парсинга URL:', error);
-            }
-          }
-        }
-        
-        // Устанавливаем имя пользователя
         if (user) {
           const name = user.first_name || user.first_name || user.name || 'User';
           setUserName(name);
-          console.log('✅ Имя установлено:', name);
+          debugText += `👤 Имя установлено: ${name}\n`;
         } else {
-          console.log('⚠️ Данные пользователя не найдены');
-          // Показываем все доступные данные для отладки
-          console.log('📋 Все данные WebApp:', {
-            initData: webApp.initData,
-            initDataUnsafe: webApp.initDataUnsafe,
-            platform: webApp.platform,
-            version: webApp.version
-          });
+          debugText += '⚠️ Используем дефолтное имя\n';
         }
+        
+        // Показываем все данные для отладки
+        debugText += `📋 InitData: ${webApp.initData || 'нет'}\n`;
+        debugText += `📋 InitDataUnsafe: ${JSON.stringify(webApp.initDataUnsafe, null, 2)}\n`;
         
         setMessage('Приложение готово');
       } else {
-        console.log('❌ Telegram WebApp недоступен');
+        debugText += '❌ Telegram WebApp недоступен\n';
         setMessage('❌ Это приложение работает только в Telegram');
       }
+      
+      setDebugInfo(debugText);
     };
 
-    // Запускаем с небольшой задержкой
-    setTimeout(getUserData, 100);
+    // Запускаем с задержкой
+    setTimeout(initApp, 500);
   }, []);
 
   // Обработчики TON Connect
@@ -328,11 +309,32 @@ export default function App() {
     </div>
   );
 
+  // Рендер отладочной информации
+  const renderDebug = () => (
+    <div className="debug-section" style={{ 
+      background: 'rgba(0,0,0,0.8)', 
+      padding: '10px', 
+      margin: '10px', 
+      borderRadius: '8px',
+      fontSize: '12px',
+      fontFamily: 'monospace',
+      whiteSpace: 'pre-wrap'
+    }}>
+      <h3>🔍 Отладочная информация:</h3>
+      {debugInfo}
+    </div>
+  );
+
   // Рендер контента
   const renderContent = () => {
     switch (activeTab) {
       case 'market':
-        return renderMarket();
+        return (
+          <>
+            {renderMarket()}
+            {renderDebug()}
+          </>
+        );
       case 'purchased':
         return renderPurchased();
       case 'profile':
