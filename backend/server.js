@@ -132,8 +132,15 @@ app.post('/api/user/connect-wallet', authenticateTelegram, async (req, res) => {
             return res.status(400).json({ error: 'Неверный адрес кошелька' });
         }
 
-        // Валидация адреса TON кошелька (базовая проверка)
-        if (!walletAddress.startsWith('EQ') && !walletAddress.startsWith('UQ')) {
+        // Валидация адреса TON кошелька (поддержка новых форматов)
+        const validFormats = [
+            walletAddress.startsWith('EQ'), // Старый формат
+            walletAddress.startsWith('UQ'), // Старый формат
+            walletAddress.startsWith('0:'), // Новый формат
+            walletAddress.match(/^[0-9a-fA-F]{48}$/) // Raw формат
+        ];
+        
+        if (!validFormats.some(format => format)) {
             return res.status(400).json({ error: 'Неверный формат адреса TON кошелька' });
         }
 
