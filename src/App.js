@@ -55,28 +55,83 @@ export default function App() {
   useEffect(() => {
     console.log('🚀 Приложение запущено');
     
-    // Пробуем получить данные пользователя из Telegram
-    if (window.Telegram?.WebApp) {
-      const webApp = window.Telegram.WebApp;
-      console.log('✅ Telegram WebApp найден');
-      
-      // Расширяем приложение
-      webApp.expand();
-      
-      // Получаем пользователя
-      const user = webApp.initDataUnsafe?.user;
-      if (user) {
-        console.log('👤 Пользователь:', user);
-        const name = user.first_name || user.first_name || 'User';
-        setUserName(name);
+    // Функция для получения данных пользователя
+    const getUserData = () => {
+      if (window.Telegram?.WebApp) {
+        const webApp = window.Telegram.WebApp;
+        console.log('✅ Telegram WebApp найден');
+        
+        // Расширяем приложение
+        webApp.expand();
+        
+        // Пробуем разные способы получения пользователя
+        let user = null;
+        
+        // Способ 1: initDataUnsafe.user
+        if (webApp.initDataUnsafe?.user) {
+          user = webApp.initDataUnsafe.user;
+          console.log('👤 Пользователь из initDataUnsafe:', user);
+        }
+        
+        // Способ 2: initDataUnsafe.user_info
+        if (!user && webApp.initDataUnsafe?.user_info) {
+          user = webApp.initDataUnsafe.user_info;
+          console.log('👤 Пользователь из user_info:', user);
+        }
+        
+        // Способ 3: парсим initData
+        if (!user && webApp.initData) {
+          try {
+            const params = new URLSearchParams(webApp.initData);
+            const userParam = params.get('user');
+            if (userParam) {
+              user = JSON.parse(decodeURIComponent(userParam));
+              console.log('👤 Пользователь из initData:', user);
+            }
+          } catch (error) {
+            console.log('❌ Ошибка парсинга initData:', error);
+          }
+        }
+        
+        // Способ 4: ищем в URL параметрах
+        if (!user) {
+          const urlParams = new URLSearchParams(window.location.search);
+          const userParam = urlParams.get('user');
+          if (userParam) {
+            try {
+              user = JSON.parse(decodeURIComponent(userParam));
+              console.log('👤 Пользователь из URL:', user);
+            } catch (error) {
+              console.log('❌ Ошибка парсинга URL:', error);
+            }
+          }
+        }
+        
+        // Устанавливаем имя пользователя
+        if (user) {
+          const name = user.first_name || user.first_name || user.name || 'User';
+          setUserName(name);
+          console.log('✅ Имя установлено:', name);
+        } else {
+          console.log('⚠️ Данные пользователя не найдены');
+          // Показываем все доступные данные для отладки
+          console.log('📋 Все данные WebApp:', {
+            initData: webApp.initData,
+            initDataUnsafe: webApp.initDataUnsafe,
+            platform: webApp.platform,
+            version: webApp.version
+          });
+        }
+        
+        setMessage('Приложение готово');
       } else {
-        console.log('⚠️ Данные пользователя недоступны');
+        console.log('❌ Telegram WebApp недоступен');
+        setMessage('❌ Это приложение работает только в Telegram');
       }
-    } else {
-      console.log('❌ Telegram WebApp недоступен');
-    }
-    
-    setMessage('Приложение готово');
+    };
+
+    // Запускаем с небольшой задержкой
+    setTimeout(getUserData, 100);
   }, []);
 
   // Обработчики TON Connect

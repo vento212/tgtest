@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telegram WebApp Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .info-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .status {
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .success { background: rgba(40, 167, 69, 0.2); border: 1px solid rgba(40, 167, 69, 0.5); }
+        .error { background: rgba(220, 53, 69, 0.2); border: 1px solid rgba(220, 53, 69, 0.5); }
+        .warning { background: rgba(255, 193, 7, 0.2); border: 1px solid rgba(255, 193, 7, 0.5); }
+        pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Telegram WebApp Test</h1>
+        
+        <div class="info-box">
+            <h2>📱 Проверка Telegram WebApp</h2>
+            <div id="telegram-status" class="status warning">Проверяем...</div>
+        </div>
+
+        <div class="info-box">
+            <h2>👤 Данные пользователя</h2>
+            <div id="user-data" class="status warning">Загружаем...</div>
+        </div>
+
+        <div class="info-box">
+            <h2>🔧 Доступные методы</h2>
+            <div id="methods" class="status warning">Проверяем...</div>
+        </div>
+
+        <div class="info-box">
+            <h2>📋 Полные данные</h2>
+            <pre id="full-data">Загружаем...</pre>
+        </div>
+    </div>
+
+    <script>
+        function updateStatus(elementId, status, message) {
+            const element = document.getElementById(elementId);
+            element.className = `status ${status}`;
+            element.textContent = message;
+        }
+
+        function updateData(elementId, data) {
+            const element = document.getElementById(elementId);
+            element.textContent = JSON.stringify(data, null, 2);
+        }
+
+        // Проверяем Telegram WebApp
+        if (window.Telegram?.WebApp) {
+            const webApp = window.Telegram.WebApp;
+            
+            updateStatus('telegram-status', 'success', '✅ Telegram WebApp доступен');
+            
+            // Получаем данные пользователя
+            const user = webApp.initDataUnsafe?.user;
+            if (user) {
+                updateStatus('user-data', 'success', `✅ Пользователь: ${user.first_name} ${user.last_name || ''} (@${user.username || 'без username'})`);
+            } else {
+                updateStatus('user-data', 'error', '❌ Данные пользователя недоступны');
+            }
+
+            // Проверяем методы
+            const methods = [];
+            if (typeof webApp.expand === 'function') methods.push('expand');
+            if (typeof webApp.close === 'function') methods.push('close');
+            if (typeof webApp.setHeaderColor === 'function') methods.push('setHeaderColor');
+            if (typeof webApp.setBackgroundColor === 'function') methods.push('setBackgroundColor');
+            
+            updateStatus('methods', 'success', `✅ Доступные методы: ${methods.join(', ')}`);
+
+            // Показываем полные данные
+            updateData('full-data', {
+                platform: webApp.platform,
+                version: webApp.version,
+                colorScheme: webApp.colorScheme,
+                themeParams: webApp.themeParams,
+                initData: webApp.initData,
+                initDataUnsafe: webApp.initDataUnsafe,
+                viewportHeight: webApp.viewportHeight,
+                viewportStableHeight: webApp.viewportStableHeight
+            });
+
+            // Расширяем приложение
+            try {
+                webApp.expand();
+                console.log('✅ Приложение расширено');
+            } catch (error) {
+                console.log('❌ Ошибка расширения:', error);
+            }
+
+        } else {
+            updateStatus('telegram-status', 'error', '❌ Telegram WebApp недоступен');
+            updateStatus('user-data', 'error', '❌ Нет данных пользователя');
+            updateStatus('methods', 'error', '❌ Нет доступных методов');
+            updateData('full-data', { error: 'Telegram WebApp не найден' });
+        }
+
+        // Дополнительная информация
+        console.log('🌐 User Agent:', navigator.userAgent);
+        console.log('📱 Screen:', screen.width, 'x', screen.height);
+        console.log('🔗 URL:', window.location.href);
+    </script>
+</body>
+</html> 
