@@ -138,7 +138,18 @@ export default function App() {
   useEffect(() => {
     const initTelegram = async () => {
       try {
-        // Пробуем инициализировать несколько раз с задержкой
+        // Проверяем, есть ли сохраненный профиль
+        const savedProfile = localStorage.getItem('userProfile');
+        if (savedProfile) {
+          const profile = JSON.parse(savedProfile);
+          setUserProfile(profile);
+          setUserBalance(profile.balance || 0);
+          setIsProfileLoading(false);
+          setMessage('Готово к работе');
+          console.log('✅ Загружен сохраненный профиль');
+        }
+
+        // Пробуем инициализировать Telegram WebApp
         let success = false;
         for (let i = 0; i < 3; i++) {
           success = telegramAuth.init();
@@ -151,22 +162,26 @@ export default function App() {
         if (success) {
           console.log('✅ Telegram WebApp инициализирован');
           
-          // Загружаем профиль пользователя из базы данных
-          try {
-            const profile = await apiClient.getUserProfile();
-            setUserProfile(profile.user);
-            setUserBalance(profile.user.balance || 0);
-            setIsProfileLoading(false);
-            setMessage('✅ Профиль загружен');
-            
-            // Загружаем заказы пользователя
-            const userOrders = await apiClient.getUserOrders();
-            setOrders(userOrders.orders || []);
-          } catch (error) {
-            console.error('❌ Ошибка загрузки профиля:', error);
-            // Не показываем ошибку, просто останавливаем загрузку
-            setIsProfileLoading(false);
-            setMessage('Готово к работе');
+          // Загружаем профиль пользователя из базы данных только если его нет
+          if (!savedProfile) {
+            try {
+              const profile = await apiClient.getUserProfile();
+              setUserProfile(profile.user);
+              setUserBalance(profile.user.balance || 0);
+              setIsProfileLoading(false);
+              setMessage('✅ Профиль загружен');
+              
+              // Сохраняем профиль в localStorage
+              localStorage.setItem('userProfile', JSON.stringify(profile.user));
+              
+              // Загружаем заказы пользователя
+              const userOrders = await apiClient.getUserOrders();
+              setOrders(userOrders.orders || []);
+            } catch (error) {
+              console.error('❌ Ошибка загрузки профиля:', error);
+              setIsProfileLoading(false);
+              setMessage('Готово к работе');
+            }
           }
         } else {
           console.warn('⚠️ Приложение запущено вне Telegram или в веб-версии');
@@ -194,34 +209,45 @@ export default function App() {
       await apiClient.connectWallet(walletAddress);
       
       // Обновляем профиль пользователя
-      if (userProfile) {
-        setUserProfile(prev => ({
-          ...prev,
-          walletAddress: walletAddress,
-          isWalletConnected: true
-        }));
-      } else {
-        // Если профиль не загружен, создаем временный
-        setUserProfile({
-          telegramId: 0,
-          username: 'user',
-          firstName: 'User',
-          lastName: '',
-          walletAddress: walletAddress,
-          isWalletConnected: true,
-          balance: 0
-        });
-      }
+      const updatedProfile = userProfile ? {
+        ...userProfile,
+        walletAddress: walletAddress,
+        isWalletConnected: true
+      } : {
+        telegramId: 0,
+        username: 'user',
+        firstName: 'User',
+        lastName: '',
+        walletAddress: walletAddress,
+        isWalletConnected: true,
+        balance: 0
+      };
+      
+      setUserProfile(updatedProfile);
+      
+      // Сохраняем в localStorage
+      localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
       
       setMessage('✅ Кошелек успешно подключен!');
     } catch (error) {
       console.error('❌ Ошибка подключения кошелька:', error);
       // Не показываем ошибку, просто обновляем UI
-      setUserProfile(prev => ({
-        ...prev,
+      const updatedProfile = userProfile ? {
+        ...userProfile,
         walletAddress: walletAddress,
         isWalletConnected: true
-      }));
+      } : {
+        telegramId: 0,
+        username: 'user',
+        firstName: 'User',
+        lastName: '',
+        walletAddress: walletAddress,
+        isWalletConnected: true,
+        balance: 0
+      };
+      
+      setUserProfile(updatedProfile);
+      localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
       setMessage('✅ Кошелек подключен!');
     }
   };
@@ -235,18 +261,32 @@ export default function App() {
       await apiClient.disconnectWallet();
       
       // Обновляем профиль пользователя
-      if (userProfile) {
-        setUserProfile(prev => ({
-          ...prev,
-          walletAddress: null,
-          isWalletConnected: false
-        }));
+      const updatedProfile = userProfile ? {
+        ...userProfile,
+        walletAddress: null,
+        isWalletConnected: false
+      } : userProfile;
+      
+      if (updatedProfile) {
+        setUserProfile(updatedProfile);
+        localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
       }
       
       setMessage('✅ Кошелек отключен');
     } catch (error) {
       console.error('❌ Ошибка отключения кошелька:', error);
-      setMessage('❌ Ошибка отключения кошелька: ' + error.message);
+      // Не показываем ошибку, просто обновляем UI
+      const updatedProfile = userProfile ? {
+        ...userProfile,
+        walletAddress: null,
+        isWalletConnected: false
+      } : userProfile;
+      
+      if (updatedProfile) {
+        setUserProfile(updatedProfile);
+        localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
+      }
+      setMessage('✅ Кошелек отключен');
     }
   };
 
@@ -263,7 +303,16 @@ export default function App() {
       const amount = parseFloat(depositAmount);
       const result = await apiClient.deposit(amount);
       
-      setUserBalance(result.user.balance);
+      const newBalance = result.user.balance;
+      setUserBalance(newBalance);
+      
+      // Обновляем профиль в localStorage
+      if (userProfile) {
+        const updatedProfile = { ...userProfile, balance: newBalance };
+        setUserProfile(updatedProfile);
+        localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
+      }
+      
       setMessage(`✅ Баланс пополнен на ${amount} TON!`);
       setShowDepositModal(false);
       setDepositAmount('');
@@ -299,7 +348,16 @@ export default function App() {
       // Выводим средства через API
       const result = await apiClient.withdraw(amount, withdrawAddress);
       
-      setUserBalance(result.user.balance);
+      const newBalance = result.user.balance;
+      setUserBalance(newBalance);
+      
+      // Обновляем профиль в localStorage
+      if (userProfile) {
+        const updatedProfile = { ...userProfile, balance: newBalance };
+        setUserProfile(updatedProfile);
+        localStorage.setItem('userProfile', JSON.stringify(updatedProfile));
+      }
+      
       setMessage(`✅ Выведено ${amount} TON на адрес ${withdrawAddress}`);
       setShowWithdrawModal(false);
       setWithdrawAmount('');
