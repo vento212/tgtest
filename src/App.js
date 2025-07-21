@@ -138,7 +138,16 @@ export default function App() {
   useEffect(() => {
     const initTelegram = async () => {
       try {
-        const success = telegramAuth.init();
+        // Пробуем инициализировать несколько раз с задержкой
+        let success = false;
+        for (let i = 0; i < 3; i++) {
+          success = telegramAuth.init();
+          if (success) break;
+          
+          console.log(`🔄 Попытка ${i + 1}/3 - ждем 1 секунду...`);
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+        
         if (success) {
           console.log('✅ Telegram WebApp инициализирован');
           

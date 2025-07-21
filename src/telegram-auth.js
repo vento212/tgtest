@@ -21,14 +21,26 @@ class TelegramAuth {
             // Включаем закрытие по свайпу
             this.tg.enableClosingConfirmation();
             
-            // Получаем данные пользователя
-            this.user = this.tg.initDataUnsafe?.user;
+            // Получаем данные пользователя разными способами
+            this.user = this.tg.initDataUnsafe?.user || this.tg.initDataUnsafe?.user_info;
             this.initData = this.tg.initData;
             this.initDataUnsafe = this.tg.initDataUnsafe;
+            
+            // Отладочная информация
+            console.log('🔍 Отладка Telegram WebApp:', {
+                tg: !!this.tg,
+                initData: !!this.initData,
+                initDataUnsafe: !!this.initDataUnsafe,
+                user: this.user,
+                platform: this.tg.platform,
+                version: this.tg.version,
+                colorScheme: this.tg.colorScheme
+            });
             
             // Проверяем, есть ли данные пользователя
             if (!this.user) {
                 console.warn('⚠️ Данные пользователя недоступны');
+                console.log('🔍 Доступные данные:', this.initDataUnsafe);
                 return false;
             }
             
