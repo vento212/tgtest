@@ -159,8 +159,8 @@ export default function App() {
             setIsProfileLoading(false);
           }
         } else {
-          console.warn('⚠️ Приложение запущено вне Telegram');
-          setMessage('❌ Приложение должно быть запущено в Telegram');
+          console.warn('⚠️ Приложение запущено вне Telegram или в веб-версии');
+          setMessage('❌ Приложение работает только в мобильном приложении Telegram. Откройте через Telegram бота.');
           setIsProfileLoading(false);
         }
       } catch (error) {
