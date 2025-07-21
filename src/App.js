@@ -119,10 +119,7 @@ const Badge = ({ children, variant = 'default', className = '' }) => {
 export default function App() {
   // Состояние
   const [user, setUser] = useState(null);
-  const [balance, setBalance] = useState(() => {
-    const saved = localStorage.getItem('ton_market_balance');
-    return saved ? parseFloat(saved) : 0;
-  });
+  const [balance, setBalance] = useState(0);
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeTab, setActiveTab] = useState('market');
   const [purchasedItems, setPurchasedItems] = useState(() => {
@@ -176,16 +173,25 @@ export default function App() {
         } else {
           // Если нет данных пользователя Telegram, показываем ошибку
           setMessage({ type: 'error', text: 'Ошибка: Данные пользователя Telegram не найдены. Откройте приложение через Telegram бота.' });
+          // Очищаем данные для неавторизованных пользователей
+          localStorage.removeItem('ton_market_balance');
+          localStorage.removeItem('ton_market_purchased');
         }
         
-        // Устанавливаем начальный баланс только если его нет в localStorage
-        if (!localStorage.getItem('ton_market_balance')) {
-          saveBalance(5.0);
+        // Загружаем баланс из localStorage только для авторизованных пользователей
+        const savedBalance = localStorage.getItem('ton_market_balance');
+        if (savedBalance) {
+          saveBalance(parseFloat(savedBalance));
+        } else {
+          saveBalance(5.0); // Начальный баланс для новых пользователей
         }
         setIsLoading(false);
       } else {
         // Если Telegram WebApp недоступен, показываем ошибку
         setMessage({ type: 'error', text: 'Ошибка: Telegram WebApp недоступен. Откройте приложение через Telegram бота.' });
+        // Очищаем данные для неавторизованных пользователей
+        localStorage.removeItem('ton_market_balance');
+        localStorage.removeItem('ton_market_purchased');
         setIsLoading(false);
       }
     };
