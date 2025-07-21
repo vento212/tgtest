@@ -57,22 +57,16 @@ export default function App() {
   const [showDevNotice, setShowDevNotice] = useState(true);
   
   // Состояние модальных окон
-  const [showGiftModal, setShowGiftModal] = useState(false);
-  const [giftRecipient, setGiftRecipient] = useState('');
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [showWithdrawModal, setShowWithdrawModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
   const [withdrawAmount, setWithdrawAmount] = useState('');
   const [withdrawAddress, setWithdrawAddress] = useState('');
   const [orders, setOrders] = useState([]);
-  
-  // Состояние анимации
-  const [isFadingOut, setIsFadingOut] = useState(false);
 
   // TON Connect
   const [tonConnectUI] = useTonConnectUI();
   const walletInfo = tonConnectUI.account;
-  const isConnected = !!walletInfo;
 
   // Инициализация приложения
   useEffect(() => {
