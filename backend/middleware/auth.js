@@ -8,33 +8,12 @@ const authenticateTelegram = async (req, res, next) => {
         const telegramData = req.headers['x-telegram-data'] || req.body.telegramData;
         const telegramHash = req.headers['x-telegram-hash'] || req.body.telegramHash;
         
-        // Если нет данных Telegram, создаем временного пользователя для веб-версии
+        // Если нет данных Telegram, возвращаем ошибку
         if (!telegramData || !telegramHash) {
-            console.log('🔧 Создаем временного пользователя для веб-версии');
-            
-            // Создаем временного пользователя для веб-версии
-            let user = await User.findOne({ telegramId: 999999999 }); // Временный ID для веб-версии
-            
-            if (!user) {
-                user = new User({
-                    telegramId: 999999999,
-                    username: 'web_user',
-                    firstName: 'Web',
-                    lastName: 'User'
-                });
-                await user.save();
-                console.log('✅ Создан временный пользователь для веб-версии');
-            }
-            
-            req.user = user;
-            req.telegramUser = {
-                id: 999999999,
-                username: 'web_user',
-                first_name: 'Web',
-                last_name: 'User'
-            };
-            
-            return next();
+            return res.status(401).json({ 
+                error: 'Отсутствуют данные Telegram. Приложение должно быть запущено в мобильном приложении Telegram.',
+                code: 'TELEGRAM_DATA_MISSING'
+            });
         }
 
         // Проверяем подпись Telegram (временно отключена для отладки)

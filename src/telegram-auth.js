@@ -15,37 +15,7 @@ class TelegramAuth {
         } else {
             console.warn('⚠️ Telegram WebApp не найден в конструкторе');
             
-            // Создаем fallback для веб-версии
-            if (window.location.href.includes('netlify.app')) {
-                console.log('🔧 Создаем fallback для веб-версии');
-                this.tg = {
-                    platform: 'web',
-                    version: '1.0',
-                    colorScheme: 'dark',
-                    expand: () => console.log('expand called'),
-                    enableClosingConfirmation: () => console.log('enableClosingConfirmation called'),
-                    initDataUnsafe: {
-                        user: {
-                            id: Date.now(),
-                            first_name: 'Web',
-                            last_name: 'User',
-                            username: 'web_user',
-                            language_code: 'ru'
-                        },
-                        hash: 'web_fallback_hash'
-                    },
-                    initData: JSON.stringify({
-                        user: {
-                            id: Date.now(),
-                            first_name: 'Web',
-                            last_name: 'User',
-                            username: 'web_user',
-                            language_code: 'ru'
-                        }
-                    })
-                };
-                console.log('✅ Fallback Telegram WebApp создан');
-            }
+
         }
     }
 
@@ -62,37 +32,7 @@ class TelegramAuth {
             this.tg = window.Telegram.WebApp;
         }
         
-        // Если все еще нет tg, создаем fallback
-        if (!this.tg && window.location.href.includes('netlify.app')) {
-            console.log('🔧 Создаем fallback в init() для веб-версии');
-            this.tg = {
-                platform: 'web',
-                version: '1.0',
-                colorScheme: 'dark',
-                expand: () => console.log('expand called'),
-                enableClosingConfirmation: () => console.log('enableClosingConfirmation called'),
-                initDataUnsafe: {
-                    user: {
-                        id: Date.now(),
-                        first_name: 'Web',
-                        last_name: 'User',
-                        username: 'web_user',
-                        language_code: 'ru'
-                    },
-                    hash: 'web_fallback_hash'
-                },
-                initData: JSON.stringify({
-                    user: {
-                        id: Date.now(),
-                        first_name: 'Web',
-                        last_name: 'User',
-                        username: 'web_user',
-                        language_code: 'ru'
-                    }
-                })
-            };
-            console.log('✅ Fallback Telegram WebApp создан в init()');
-        }
+
         
         if (!this.tg) {
             console.warn('⚠️ Telegram WebApp не доступен');
@@ -132,19 +72,7 @@ class TelegramAuth {
                 console.warn('⚠️ Данные пользователя недоступны');
                 console.log('🔍 Доступные данные:', this.initDataUnsafe);
                 
-                // В веб-версии Telegram создаем временного пользователя
-                if (this.tg && this.tg.platform === 'web') {
-                    console.log('🔧 Создаем временного пользователя для веб-версии');
-                    this.user = {
-                        id: Date.now(),
-                        first_name: 'Web',
-                        last_name: 'User',
-                        username: 'web_user',
-                        language_code: 'ru'
-                    };
-                } else {
-                    return false;
-                }
+                return false;
             }
             
             console.log('✅ Telegram WebApp инициализирован:', {
