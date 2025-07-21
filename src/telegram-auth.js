@@ -14,6 +14,38 @@ class TelegramAuth {
             console.log('✅ Telegram WebApp найден в конструкторе');
         } else {
             console.warn('⚠️ Telegram WebApp не найден в конструкторе');
+            
+            // Создаем fallback для веб-версии
+            if (window.location.href.includes('netlify.app')) {
+                console.log('🔧 Создаем fallback для веб-версии');
+                this.tg = {
+                    platform: 'web',
+                    version: '1.0',
+                    colorScheme: 'dark',
+                    expand: () => console.log('expand called'),
+                    enableClosingConfirmation: () => console.log('enableClosingConfirmation called'),
+                    initDataUnsafe: {
+                        user: {
+                            id: Date.now(),
+                            first_name: 'Web',
+                            last_name: 'User',
+                            username: 'web_user',
+                            language_code: 'ru'
+                        },
+                        hash: 'web_fallback_hash'
+                    },
+                    initData: JSON.stringify({
+                        user: {
+                            id: Date.now(),
+                            first_name: 'Web',
+                            last_name: 'User',
+                            username: 'web_user',
+                            language_code: 'ru'
+                        }
+                    })
+                };
+                console.log('✅ Fallback Telegram WebApp создан');
+            }
         }
     }
 
