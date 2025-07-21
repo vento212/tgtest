@@ -147,6 +147,25 @@ export default function App() {
     localStorage.setItem('ton_market_purchased', JSON.stringify(items));
   };
 
+  // Функция для получения баланса из TON кошелька
+  const getWalletBalance = async () => {
+    if (walletInfo?.address) {
+      try {
+        // Здесь должна быть логика получения баланса из TON кошелька
+        // Пока используем localStorage, но в реальном приложении здесь будет API вызов
+        const savedBalance = localStorage.getItem('ton_market_balance');
+        if (savedBalance) {
+          return parseFloat(savedBalance);
+        }
+        return 0;
+      } catch (error) {
+        console.error('Ошибка получения баланса:', error);
+        return 0;
+      }
+    }
+    return 0;
+  };
+
   // Инициализация Telegram WebApp
   useEffect(() => {
     const initTelegram = () => {
@@ -178,13 +197,7 @@ export default function App() {
           localStorage.removeItem('ton_market_purchased');
         }
         
-        // Загружаем баланс из localStorage только для авторизованных пользователей
-        const savedBalance = localStorage.getItem('ton_market_balance');
-        if (savedBalance) {
-          saveBalance(parseFloat(savedBalance));
-        } else {
-          saveBalance(5.0); // Начальный баланс для новых пользователей
-        }
+        // Баланс будет загружен только при подключении кошелька
         setIsLoading(false);
       } else {
         // Если Telegram WebApp недоступен, показываем ошибку
@@ -201,10 +214,15 @@ export default function App() {
 
   // Обработчики TON Connect
   useEffect(() => {
-    const unsubscribe = tonConnectUI.onStatusChange((wallet) => {
+    const unsubscribe = tonConnectUI.onStatusChange(async (wallet) => {
       if (wallet) {
+        // Загружаем баланс при подключении кошелька
+        const walletBalance = await getWalletBalance();
+        saveBalance(walletBalance);
         setMessage({ type: 'success', text: 'Кошелек подключен!' });
       } else {
+        // Сбрасываем баланс при отключении кошелька
+        saveBalance(0);
         setMessage({ type: 'info', text: 'Кошелек отключен' });
       }
     });
@@ -349,9 +367,15 @@ export default function App() {
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm text-gray-400">Баланс</p>
-                  <p className="text-2xl font-bold text-blue-400">{balance.toFixed(2)} TON</p>
+                  <p className="text-2xl font-bold text-blue-400">
+                    {isConnected ? `${balance.toFixed(2)} TON` : 'Подключите кошелек'}
+                  </p>
                 </div>
-                <Button onClick={() => setShowDepositModal(true)}>
+                <Button 
+                  onClick={() => setShowDepositModal(true)}
+                  disabled={!isConnected}
+                  className={!isConnected ? 'opacity-50 cursor-not-allowed' : ''}
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   Пополнить
                 </Button>
@@ -515,8 +539,14 @@ export default function App() {
             <Card>
               <div className="text-center">
                 <p className="text-sm text-gray-400">Общий баланс</p>
-                <p className="text-3xl font-bold text-blue-400">{balance.toFixed(2)} TON</p>
-                <Button onClick={() => setShowDepositModal(true)} className="mt-4">
+                <p className="text-3xl font-bold text-blue-400">
+                  {isConnected ? `${balance.toFixed(2)} TON` : 'Подключите кошелек'}
+                </p>
+                <Button 
+                  onClick={() => setShowDepositModal(true)} 
+                  className="mt-4"
+                  disabled={!isConnected}
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   Пополнить баланс
                 </Button>
