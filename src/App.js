@@ -130,6 +130,7 @@ export default function App() {
   const [depositAmount, setDepositAmount] = useState('');
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [balanceStatus, setBalanceStatus] = useState('');
 
   // TON Connect
   const [tonConnectUI] = useTonConnectUI();
@@ -151,25 +152,46 @@ export default function App() {
   const getWalletBalance = async () => {
     if (walletInfo?.address) {
       try {
-        // Получаем баланс через TON Connect API
+        // Сначала пробуем получить баланс через TON Connect API
         const balance = await tonConnectUI.wallet?.account?.balance;
-        console.log('Сырой баланс из API:', balance);
+        console.log('Сырой баланс из TON Connect API:', balance);
         
         if (balance && balance !== '0') {
           // Конвертируем из наноТОН в ТОН (1 TON = 1,000,000,000 наноТОН)
           const tonBalance = parseFloat(balance) / 1000000000;
           console.log('Конвертированный баланс:', tonBalance);
+          setBalanceStatus('TON Connect');
           return tonBalance;
         }
         
-        // Если баланс 0 или не получен, используем localStorage
+        // Если TON Connect не дал баланс, пробуем через TON API
+        console.log('Пробуем получить баланс через TON API...');
+        setBalanceStatus('TON API...');
+        try {
+          const response = await fetch(`https://toncenter.com/api/v2/getAddressBalance?address=${walletInfo.address}`);
+          const data = await response.json();
+          console.log('Ответ от TON API:', data);
+          
+          if (data.ok && data.result) {
+            const tonBalance = parseFloat(data.result) / 1000000000;
+            console.log('Баланс из TON API:', tonBalance);
+            setBalanceStatus('TON API');
+            return tonBalance;
+          }
+        } catch (apiError) {
+          console.error('Ошибка получения баланса через TON API:', apiError);
+        }
+        
+        // Если API не сработали, используем localStorage
         const savedBalance = localStorage.getItem('ton_market_balance');
         if (savedBalance) {
           console.log('Используем сохраненный баланс:', savedBalance);
+          setBalanceStatus('LocalStorage');
           return parseFloat(savedBalance);
         }
         
         console.log('Баланс не найден, возвращаем 0');
+        setBalanceStatus('Не найден');
         return 0;
       } catch (error) {
         console.error('Ошибка получения баланса:', error);
@@ -449,6 +471,9 @@ export default function App() {
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
                     Сырой баланс: {walletInfo.account?.balance || 'Не получен'}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Статус: {balanceStatus || 'Загрузка...'}
                   </p>
                 </div>
               )}
