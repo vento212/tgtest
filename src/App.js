@@ -151,8 +151,14 @@ export default function App() {
   const getWalletBalance = async () => {
     if (walletInfo?.address) {
       try {
-        // Здесь должна быть логика получения баланса из TON кошелька
-        // Пока используем localStorage, но в реальном приложении здесь будет API вызов
+        // Получаем баланс через TON Connect API
+        const balance = await tonConnectUI.wallet?.account?.balance;
+        if (balance) {
+          // Конвертируем из наноТОН в ТОН (1 TON = 1,000,000,000 наноТОН)
+          return parseFloat(balance) / 1000000000;
+        }
+        
+        // Fallback к localStorage если API не работает
         const savedBalance = localStorage.getItem('ton_market_balance');
         if (savedBalance) {
           return parseFloat(savedBalance);
@@ -216,11 +222,17 @@ export default function App() {
   useEffect(() => {
     const unsubscribe = tonConnectUI.onStatusChange(async (wallet) => {
       if (wallet) {
+        console.log('Кошелек подключен:', wallet);
+        console.log('Адрес кошелька:', wallet.account?.address);
+        console.log('Баланс кошелька:', wallet.account?.balance);
+        
         // Загружаем баланс при подключении кошелька
         const walletBalance = await getWalletBalance();
+        console.log('Полученный баланс:', walletBalance);
         saveBalance(walletBalance);
         setMessage({ type: 'success', text: 'Кошелек подключен!' });
       } else {
+        console.log('Кошелек отключен');
         // Сбрасываем баланс при отключении кошелька
         saveBalance(0);
         setMessage({ type: 'info', text: 'Кошелек отключен' });
@@ -402,9 +414,17 @@ export default function App() {
                 </Button>
               </div>
               {walletInfo?.address && (
-                <p className="text-xs text-gray-400 mt-2 font-mono">
-                  {walletInfo.address.slice(0, 6)}...{walletInfo.address.slice(-4)}
-                </p>
+                <div className="mt-2">
+                  <p className="text-xs text-gray-400 font-mono">
+                    {walletInfo.address.slice(0, 6)}...{walletInfo.address.slice(-4)}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Полный адрес: {walletInfo.address}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Баланс в кошельке: {walletInfo.account?.balance ? `${parseFloat(walletInfo.account.balance) / 1000000000} TON` : 'Загрузка...'}
+                  </p>
+                </div>
               )}
             </Card>
 
