@@ -132,6 +132,21 @@ export default function App() {
   const walletInfo = tonConnectUI.account;
   const isConnected = !!walletInfo;
 
+  // Обработчики TON Connect
+  useEffect(() => {
+    const unsubscribe = tonConnectUI.onStatusChange((wallet) => {
+      if (wallet) {
+        console.log('🔗 TON Connect: кошелек подключен автоматически:', wallet.account.address);
+        handleWalletConnected(wallet.account.address);
+      } else {
+        console.log('🔗 TON Connect: кошелек отключен');
+        handleWalletDisconnected();
+      }
+    });
+
+    return () => unsubscribe();
+  }, [tonConnectUI]);
+
 
 
   // Инициализация Telegram WebApp
@@ -185,7 +200,17 @@ export default function App() {
           }
         } else {
           console.warn('⚠️ Приложение запущено вне Telegram или в веб-версии');
-          setMessage('❌ Приложение работает только в мобильном приложении Telegram. Откройте через Telegram бота.');
+          // Не показываем ошибку, если у нас есть сохраненный профиль с кошельком
+          if (!savedProfile) {
+            setMessage('❌ Приложение работает только в мобильном приложении Telegram. Откройте через Telegram бота.');
+          } else {
+            const profile = JSON.parse(savedProfile);
+            if (profile.walletAddress) {
+              setMessage('Готово к работе');
+            } else {
+              setMessage('❌ Приложение работает только в мобильном приложении Telegram. Откройте через Telegram бота.');
+            }
+          }
           setIsProfileLoading(false);
         }
       } catch (error) {
