@@ -69,7 +69,33 @@ class TelegramAuth {
 
     // Получение данных для аутентификации
     getAuthData() {
-        if (!this.tg || !this.initData) {
+        console.log('🔍 getAuthData - проверка данных:', {
+            tg: !!this.tg,
+            initData: this.initData,
+            initDataUnsafe: this.initDataUnsafe,
+            user: this.user
+        });
+
+        if (!this.tg) {
+            console.warn('⚠️ Telegram WebApp не доступен');
+            return null;
+        }
+
+        // Если нет initData, пробуем создать из user
+        if (!this.initData && this.user) {
+            console.log('🔧 Создаем initData из user данных');
+            const userData = {
+                user: this.user,
+                hash: this.tg.initDataUnsafe?.hash || ''
+            };
+            return {
+                telegramData: JSON.stringify(userData),
+                telegramHash: this.tg.initDataUnsafe?.hash || ''
+            };
+        }
+
+        if (!this.initData) {
+            console.warn('⚠️ Нет initData и user данных');
             return null;
         }
 
@@ -82,7 +108,10 @@ class TelegramAuth {
     // Отправка данных в заголовках для аутентификации
     getAuthHeaders() {
         const authData = this.getAuthData();
+        console.log('🔍 getAuthHeaders - данные аутентификации:', authData);
+        
         if (!authData) {
+            console.warn('⚠️ Нет данных аутентификации');
             return {};
         }
 

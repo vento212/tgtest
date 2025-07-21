@@ -33,8 +33,19 @@ const authenticateTelegram = async (req, res, next) => {
         }
 
         // Парсим данные пользователя
-        const userData = JSON.parse(telegramData);
-        const telegramUser = userData.user;
+        let userData;
+        let telegramUser;
+        
+        try {
+            userData = JSON.parse(telegramData);
+            telegramUser = userData.user;
+        } catch (error) {
+            console.error('❌ Ошибка парсинга telegramData:', error);
+            return res.status(401).json({ 
+                error: 'Неверный формат данных Telegram',
+                code: 'INVALID_DATA_FORMAT'
+            });
+        }
 
         if (!telegramUser || !telegramUser.id) {
             return res.status(401).json({ 
