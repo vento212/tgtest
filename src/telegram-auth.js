@@ -1,212 +1,107 @@
 // Утилиты для работы с Telegram WebApp
 class TelegramAuth {
-    constructor() {
-        console.log('🔍 TelegramAuth constructor - проверяем Telegram WebApp');
-        console.log('🔍 window.Telegram:', !!window.Telegram);
-        console.log('🔍 window.Telegram?.WebApp:', !!window.Telegram?.WebApp);
-        
-        this.tg = window.Telegram?.WebApp;
-        this.user = null;
-        this.initData = null;
-        this.initDataUnsafe = null;
-        
-        if (this.tg) {
-            console.log('✅ Telegram WebApp найден в конструкторе');
-        } else {
-            console.warn('⚠️ Telegram WebApp не найден в конструкторе');
-            
+  constructor() {
+    this.webApp = null;
+    this.user = null;
+    this.initData = null;
+    this.initDataUnsafe = null;
+    this.isInitialized = false;
+  }
 
-        }
+  // Инициализация Telegram WebApp
+  init() {
+    try {
+      console.log('🔍 TelegramAuth: проверяем Telegram WebApp...');
+      
+      // Проверяем наличие Telegram WebApp API
+      if (!window.Telegram || !window.Telegram.WebApp) {
+        console.warn('❌ TelegramAuth: Telegram WebApp API недоступен');
+        return false;
+      }
+
+      this.webApp = window.Telegram.WebApp;
+      
+      // Проверяем, что приложение запущено в Telegram
+      if (!this.webApp.initDataUnsafe) {
+        console.warn('❌ TelegramAuth: initDataUnsafe недоступен');
+        return false;
+      }
+
+      // Получаем данные пользователя
+      this.user = this.webApp.initDataUnsafe.user;
+      this.initData = this.webApp.initData;
+      this.initDataUnsafe = this.webApp.initDataUnsafe;
+
+      if (!this.user) {
+        console.warn('❌ TelegramAuth: данные пользователя недоступны');
+        return false;
+      }
+
+      console.log('✅ TelegramAuth: успешно инициализирован');
+      console.log('👤 Пользователь:', this.user);
+      
+      this.isInitialized = true;
+      return true;
+
+    } catch (error) {
+      console.error('❌ TelegramAuth: ошибка инициализации:', error);
+      return false;
+    }
+  }
+
+  // Получение заголовков аутентификации
+  getAuthHeaders() {
+    if (!this.isInitialized) {
+      console.warn('⚠️ TelegramAuth: не инициализирован');
+      return {};
     }
 
-    // Инициализация Telegram WebApp
-    init() {
-        console.log('🔍 init() - начинаем инициализацию');
-        console.log('🔍 this.tg:', !!this.tg);
-        console.log('🔍 window.Telegram:', !!window.Telegram);
-        console.log('🔍 window.Telegram?.WebApp:', !!window.Telegram?.WebApp);
-        
-        // Попробуем переинициализировать, если tg не найден
-        if (!this.tg && window.Telegram?.WebApp) {
-            console.log('🔧 Переинициализируем Telegram WebApp');
-            this.tg = window.Telegram.WebApp;
-        }
-        
+    try {
+      const headers = {
+        'Content-Type': 'application/json',
+        'X-Telegram-Data': JSON.stringify(this.initDataUnsafe),
+        'X-Telegram-Hash': this.initData || '',
+        'X-Telegram-User-ID': this.user.id.toString(),
+        'X-Telegram-Username': this.user.username || '',
+        'X-Telegram-First-Name': this.user.first_name || '',
+        'X-Telegram-Last-Name': this.user.last_name || ''
+      };
 
-        
-        if (!this.tg) {
-            console.warn('⚠️ Telegram WebApp не доступен');
-            console.log('🔍 Доступные глобальные объекты:', {
-                window: !!window,
-                Telegram: !!window.Telegram,
-                WebApp: !!window.Telegram?.WebApp
-            });
-            return false;
-        }
+      console.log('🔐 TelegramAuth: заголовки аутентификации:', headers);
+      return headers;
 
-        try {
-            // Расширяем приложение на весь экран
-            this.tg.expand();
-            
-            // Включаем закрытие по свайпу
-            this.tg.enableClosingConfirmation();
-            
-            // Получаем данные пользователя разными способами
-            this.user = this.tg.initDataUnsafe?.user || this.tg.initDataUnsafe?.user_info;
-            this.initData = this.tg.initData;
-            this.initDataUnsafe = this.tg.initDataUnsafe;
-            
-            // Отладочная информация
-            console.log('🔍 Отладка Telegram WebApp:', {
-                tg: !!this.tg,
-                initData: !!this.initData,
-                initDataUnsafe: !!this.initDataUnsafe,
-                user: this.user,
-                platform: this.tg.platform,
-                version: this.tg.version,
-                colorScheme: this.tg.colorScheme
-            });
-            
-            // Проверяем, есть ли данные пользователя
-            if (!this.user) {
-                console.warn('⚠️ Данные пользователя недоступны');
-                console.log('🔍 Доступные данные:', this.initDataUnsafe);
-                
-                return false;
-            }
-            
-            console.log('✅ Telegram WebApp инициализирован:', {
-                user: this.user,
-                platform: this.tg.platform,
-                version: this.tg.version
-            });
-            
-            return true;
-        } catch (error) {
-            console.error('❌ Ошибка инициализации Telegram WebApp:', error);
-            return false;
-        }
+    } catch (error) {
+      console.error('❌ TelegramAuth: ошибка получения заголовков:', error);
+      return {};
     }
+  }
 
-    // Получение данных пользователя
-    getUser() {
-        return this.user;
-    }
+  // Получение данных пользователя
+  getUser() {
+    return this.user;
+  }
 
-    // Проверка, запущено ли приложение в Telegram
-    isTelegramApp() {
-        return !!this.tg;
-    }
+  // Проверка инициализации
+  isReady() {
+    return this.isInitialized && this.user !== null;
+  }
 
-    // Получение данных для аутентификации
-    getAuthData() {
-        console.log('🔍 getAuthData - проверка данных:', {
-            tg: !!this.tg,
-            initData: this.initData,
-            initDataUnsafe: this.initDataUnsafe,
-            user: this.user
-        });
+  // Получение WebApp объекта
+  getWebApp() {
+    return this.webApp;
+  }
 
-        if (!this.tg) {
-            console.warn('⚠️ Telegram WebApp не доступен');
-            return null;
-        }
+  // Получение initData
+  getInitData() {
+    return this.initData;
+  }
 
-        // Если нет initData, пробуем создать из user
-        if (!this.initData && this.user) {
-            console.log('🔧 Создаем initData из user данных');
-            const userData = {
-                user: this.user,
-                hash: this.tg.initDataUnsafe?.hash || ''
-            };
-            return {
-                telegramData: JSON.stringify(userData),
-                telegramHash: this.tg.initDataUnsafe?.hash || ''
-            };
-        }
-
-        if (!this.initData) {
-            console.warn('⚠️ Нет initData и user данных');
-            return null;
-        }
-
-        return {
-            telegramData: this.initData,
-            telegramHash: this.tg.initDataUnsafe?.hash || ''
-        };
-    }
-
-    // Отправка данных в заголовках для аутентификации
-    getAuthHeaders() {
-        const authData = this.getAuthData();
-        console.log('🔍 getAuthHeaders - данные аутентификации:', authData);
-        
-        if (!authData) {
-            console.warn('⚠️ Нет данных аутентификации');
-            return {};
-        }
-
-        return {
-            'X-Telegram-Data': authData.telegramData,
-            'X-Telegram-Hash': authData.telegramHash,
-            'Content-Type': 'application/json'
-        };
-    }
-
-    // Показ главного кнопки Telegram
-    showMainButton(text, callback) {
-        if (!this.tg) return;
-        
-        this.tg.MainButton.setText(text);
-        this.tg.MainButton.onClick(callback);
-        this.tg.MainButton.show();
-    }
-
-    // Скрытие главной кнопки Telegram
-    hideMainButton() {
-        if (!this.tg) return;
-        this.tg.MainButton.hide();
-    }
-
-    // Показ уведомления
-    showAlert(message) {
-        if (!this.tg) {
-            alert(message);
-            return;
-        }
-        this.tg.showAlert(message);
-    }
-
-    // Показ подтверждения
-    showConfirm(message, callback) {
-        if (!this.tg) {
-            const result = confirm(message);
-            callback(result);
-            return;
-        }
-        this.tg.showConfirm(message, callback);
-    }
-
-    // Закрытие приложения
-    close() {
-        if (!this.tg) return;
-        this.tg.close();
-    }
-
-    // Получение темы
-    getTheme() {
-        if (!this.tg) return 'light';
-        return this.tg.colorScheme || 'light';
-    }
-
-    // Получение цвета темы
-    getThemeParams() {
-        if (!this.tg) return {};
-        return this.tg.themeParams || {};
-    }
+  // Получение initDataUnsafe
+  getInitDataUnsafe() {
+    return this.initDataUnsafe;
+  }
 }
 
-// Создаем глобальный экземпляр
+// Создаем и экспортируем экземпляр
 const telegramAuth = new TelegramAuth();
-
 export default telegramAuth; 
