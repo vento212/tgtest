@@ -63,6 +63,17 @@ mongoose.connect(mongoUri, {
     console.log('💡 Убедитесь, что MongoDB запущен локально или настроен MongoDB Atlas');
 });
 
+// ===== HEALTH CHECK ENDPOINT =====
+
+// Health check для Railway
+app.get('/api/health', (req, res) => {
+    res.json({ 
+        status: 'ok', 
+        timestamp: new Date().toISOString(),
+        database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected'
+    });
+});
+
 // ===== API ENDPOINTS ДЛЯ ПОЛЬЗОВАТЕЛЕЙ =====
 
 // Получение профиля пользователя
