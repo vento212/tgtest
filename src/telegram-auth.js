@@ -67,7 +67,20 @@ class TelegramAuth {
             if (!this.user) {
                 console.warn('⚠️ Данные пользователя недоступны');
                 console.log('🔍 Доступные данные:', this.initDataUnsafe);
-                return false;
+                
+                // В веб-версии Telegram создаем временного пользователя
+                if (this.tg && this.tg.platform === 'web') {
+                    console.log('🔧 Создаем временного пользователя для веб-версии');
+                    this.user = {
+                        id: Date.now(),
+                        first_name: 'Web',
+                        last_name: 'User',
+                        username: 'web_user',
+                        language_code: 'ru'
+                    };
+                } else {
+                    return false;
+                }
             }
             
             console.log('✅ Telegram WebApp инициализирован:', {
