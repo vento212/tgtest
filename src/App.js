@@ -35,8 +35,8 @@ const marketItems = [
 ];
 
 export default function App() {
-  // Простое состояние
-  const [userName, setUserName] = useState('User');
+  // Состояние пользователя Telegram
+  const [telegramUser, setTelegramUser] = useState(null);
   const [userBalance, setUserBalance] = useState(0);
   const [selectedItem, setSelectedItem] = useState(marketItems[0]);
   const [activeTab, setActiveTab] = useState('market');
@@ -45,27 +45,105 @@ export default function App() {
   const [depositAmount, setDepositAmount] = useState('');
   const [purchasedItems, setPurchasedItems] = useState([]);
   const [showDevNotice, setShowDevNotice] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
 
   // TON Connect
   const [tonConnectUI] = useTonConnectUI();
   const walletInfo = tonConnectUI.account;
   const isConnected = !!walletInfo;
 
-  // Простая инициализация
+  // Инициализация Telegram WebApp
   useEffect(() => {
-    console.log('🚀 Приложение запущено');
-    
-    // Пробуем получить имя пользователя из Telegram
-    if (window.Telegram?.WebApp?.initDataUnsafe?.user) {
-      const user = window.Telegram.WebApp.initDataUnsafe.user;
-      const name = user.first_name || user.first_name || 'User';
-      setUserName(name);
-      console.log('✅ Имя пользователя:', name);
+    const initTelegram = () => {
+      console.log('🚀 Инициализация Telegram WebApp...');
+      
+      if (window.Telegram?.WebApp) {
+        const webApp = window.Telegram.WebApp;
+        
+        // Расширяем приложение
+        webApp.expand();
+        
+        // Включаем кнопку закрытия
+        webApp.enableClosingConfirmation();
+        
+        // Устанавливаем тему
+        webApp.setHeaderColor('#1a1a2e');
+        webApp.setBackgroundColor('#1a1a2e');
+        
+        console.log('✅ Telegram WebApp инициализирован');
+        console.log('📱 Платформа:', webApp.platform);
+        console.log('🌐 Версия:', webApp.version);
+        console.log('📊 Viewport:', webApp.viewportHeight, 'x', webApp.viewportStableHeight);
+        
+        // Получаем данные пользователя
+        const user = webApp.initDataUnsafe?.user;
+        if (user) {
+          console.log('👤 Данные пользователя:', user);
+          setTelegramUser({
+            id: user.id,
+            firstName: user.first_name,
+            lastName: user.last_name,
+            username: user.username,
+            languageCode: user.language_code,
+            isPremium: user.is_premium,
+            photoUrl: user.photo_url
+          });
+        } else {
+          console.log('⚠️ Данные пользователя недоступны');
+          // Пробуем получить из initData
+          const initData = webApp.initData;
+          if (initData) {
+            console.log('📋 InitData:', initData);
+            // Парсим initData для получения пользователя
+            try {
+              const params = new URLSearchParams(initData);
+              const userParam = params.get('user');
+              if (userParam) {
+                const userData = JSON.parse(decodeURIComponent(userParam));
+                console.log('👤 Пользователь из initData:', userData);
+                setTelegramUser({
+                  id: userData.id,
+                  firstName: userData.first_name,
+                  lastName: userData.last_name,
+                  username: userData.username,
+                  languageCode: userData.language_code,
+                  isPremium: userData.is_premium,
+                  photoUrl: userData.photo_url
+                });
+              }
+            } catch (error) {
+              console.log('❌ Ошибка парсинга initData:', error);
+            }
+          }
+        }
+        
+        // Получаем данные чата
+        const chat = webApp.initDataUnsafe?.chat;
+        if (chat) {
+          console.log('💬 Данные чата:', chat);
+        }
+        
+        // Получаем данные старта
+        const startParam = webApp.initDataUnsafe?.start_param;
+        if (startParam) {
+          console.log('🎯 Start параметр:', startParam);
+        }
+        
+        setMessage('✅ Приложение готово к работе');
+      } else {
+        console.log('❌ Telegram WebApp недоступен');
+        setMessage('❌ Это приложение работает только в Telegram');
+      }
+      
+      setIsLoading(false);
+    };
+
+    // Проверяем, загружен ли Telegram WebApp
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initTelegram);
     } else {
-      console.log('⚠️ Telegram данные недоступны, используем дефолтное имя');
+      initTelegram();
     }
-    
-    setMessage('Готово к работе');
   }, []);
 
   // Обработчики TON Connect
@@ -83,8 +161,51 @@ export default function App() {
     return () => unsubscribe();
   }, [tonConnectUI]);
 
-  // Простое пополнение баланса
+  // Загрузка профиля пользователя
+  const loadUserProfile = async () => {
+    if (!telegramUser) return;
+    
+    try {
+      // Здесь можно загрузить данные из базы данных
+      // Пока используем localStorage для демонстрации
+      const savedBalance = localStorage.getItem(`balance_${telegramUser.id}`);
+      const savedPurchased = localStorage.getItem(`purchased_${telegramUser.id}`);
+      
+      if (savedBalance) {
+        setUserBalance(parseFloat(savedBalance));
+      }
+      
+      if (savedPurchased) {
+        setPurchasedItems(JSON.parse(savedPurchased));
+      }
+    } catch (error) {
+      console.log('❌ Ошибка загрузки профиля:', error);
+    }
+  };
+
+  useEffect(() => {
+    loadUserProfile();
+  }, [telegramUser]);
+
+  // Сохранение данных пользователя
+  const saveUserData = () => {
+    if (!telegramUser) return;
+    
+    localStorage.setItem(`balance_${telegramUser.id}`, userBalance.toString());
+    localStorage.setItem(`purchased_${telegramUser.id}`, JSON.stringify(purchasedItems));
+  };
+
+  useEffect(() => {
+    saveUserData();
+  }, [userBalance, purchasedItems, telegramUser]);
+
+  // Пополнение баланса
   const handleDeposit = () => {
+    if (!telegramUser) {
+      setMessage('❌ Данные пользователя недоступны');
+      return;
+    }
+
     if (!depositAmount || parseFloat(depositAmount) <= 0) {
       setMessage('❌ Введите корректную сумму');
       return;
@@ -97,8 +218,13 @@ export default function App() {
     setDepositAmount('');
   };
 
-  // Простая покупка
+  // Покупка NFT
   const buyNFT = () => {
+    if (!telegramUser) {
+      setMessage('❌ Данные пользователя недоступны');
+      return;
+    }
+
     if (!isConnected) {
       setMessage('❌ Подключите кошелек для покупки');
       return;
@@ -115,9 +241,11 @@ export default function App() {
     // Добавляем товар в список купленных
     const purchasedItem = {
       ...selectedItem,
-      id: Date.now(), // Уникальный ID
+      id: Date.now(),
       purchaseDate: new Date().toLocaleDateString(),
-      purchaseTime: new Date().toLocaleTimeString()
+      purchaseTime: new Date().toLocaleTimeString(),
+      buyerId: telegramUser.id,
+      buyerName: telegramUser.firstName
     };
     
     setPurchasedItems(prev => [purchasedItem, ...prev]);
@@ -125,23 +253,58 @@ export default function App() {
   };
 
   // Рендер пользователя
-  const renderUser = () => (
-    <div className="user-info">
-      <div className="user-profile">
-        <div className="user-avatar">
-          <span>👤</span>
+  const renderUser = () => {
+    if (!telegramUser) {
+      return (
+        <div className="user-info">
+          <div className="user-profile">
+            <div className="user-avatar">
+              <span>👤</span>
+            </div>
+            <div className="user-details">
+              <div className="user-name">Пользователь</div>
+              <div className="user-username">@user</div>
+            </div>
+          </div>
+          <div className="user-balance">
+            <div className="balance-amount">{userBalance.toFixed(2)} TON</div>
+            <div className="balance-label">Баланс</div>
+          </div>
         </div>
-        <div className="user-details">
-          <div className="user-name">{userName}</div>
-          <div className="user-username">@user</div>
+      );
+    }
+
+    return (
+      <div className="user-info">
+        <div className="user-profile">
+          <div className="user-avatar">
+            {telegramUser.photoUrl ? (
+              <img 
+                src={telegramUser.photoUrl} 
+                alt={telegramUser.firstName}
+                style={{ width: '100%', height: '100%', borderRadius: '50%' }}
+              />
+            ) : (
+              <span>{telegramUser.firstName?.charAt(0) || '👤'}</span>
+            )}
+          </div>
+          <div className="user-details">
+            <div className="user-name">
+              {telegramUser.firstName} {telegramUser.lastName}
+            </div>
+            <div className="user-username">
+              @{telegramUser.username || 'user'}
+              {telegramUser.isPremium && ' 👑'}
+            </div>
+          </div>
+        </div>
+        <div className="user-balance">
+          <div className="balance-amount">{userBalance.toFixed(2)} TON</div>
+          <div className="balance-label">Баланс</div>
         </div>
       </div>
-      <div className="user-balance">
-        <div className="balance-amount">{userBalance.toFixed(2)} TON</div>
-        <div className="balance-label">Баланс</div>
-      </div>
-    </div>
-  );
+    );
+  };
 
   // Рендер кошелька
   const renderWallet = () => (
@@ -205,9 +368,19 @@ export default function App() {
             <button 
               className="buy-btn"
               onClick={buyNFT}
+              disabled={!isConnected || userBalance < selectedItem.price}
             >
               Купить за {selectedItem.price} TON
             </button>
+            {!isConnected && (
+              <button 
+                className="buy-balance-btn"
+                onClick={buyNFT}
+                disabled={userBalance < selectedItem.price}
+              >
+                Купить за баланс
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -302,6 +475,18 @@ export default function App() {
       </button>
     </div>
   );
+
+  // Загрузка
+  if (isLoading) {
+    return (
+      <div className="App">
+        <div className="loading">
+          <div className="loading-spinner"></div>
+          <p>Загрузка приложения...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="App">

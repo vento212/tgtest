@@ -1,9 +1,16 @@
 {
-  "url": "https://fancy-melomakarona-ceb24e.netlify.app/tonconnect-manifest.json",
-  "name": "TON NFT Marketplace",
-  "iconUrl": "https://fancy-melomakarona-ceb24e.netlify.app/logo192.png",
+  "url": "https://fancy-melomakarona-ceb24e.netlify.app",
+  "name": "TON Market",
+  "iconUrl": "https://fancy-melomakarona-ceb24e.netlify.app/favicon.ico",
   "termsOfUseUrl": "https://fancy-melomakarona-ceb24e.netlify.app/terms",
   "privacyPolicyUrl": "https://fancy-melomakarona-ceb24e.netlify.app/privacy",
-  "features": ["ton_addr", "ton_proof", "ton_sign"],
-  "wallets": ["tonkeeper", "tonhub", "mytonwallet"]
+  "features": [
+    "ton_addr"
+  ],
+  "items": [
+    {
+      "name": "ton_addr",
+      "description": "Получение адреса кошелька TON"
+    }
+  ]
 } 

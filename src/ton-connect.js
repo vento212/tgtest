@@ -1,14 +1,37 @@
 import { TonConnect } from '@tonconnect/sdk';
 
-// Создаем экземпляр TonConnect с манифестом
-const manifestUrl = 'https://fancy-melomakarona-ceb24e.netlify.app/tonconnect-manifest.json';
+// Конфигурация для Telegram WebApp
+const manifestUrl = 'https://your-app-domain.com/tonconnect-manifest.json';
 
-export const tonConnect = new TonConnect({
-    manifestUrl,
-    connectButtonOptions: {
-        enableSandbox: true
+// Создаем экземпляр TonConnect
+const connector = new TonConnect({
+  manifestUrl: manifestUrl,
+  // Дополнительные настройки для Telegram WebApp
+  uiPreferences: {
+    theme: 'dark',
+    colorsSet: {
+      [TonConnect.Theme.DARK]: {
+        constant: {
+          background: '#1a1a2e',
+          surface: '#16213e',
+          surfaceVariant: '#0f3460',
+          primary: '#0088cc',
+          onPrimary: '#ffffff',
+          secondary: '#00a8ff',
+          onSecondary: '#ffffff',
+          error: '#ff6b6b',
+          onError: '#ffffff',
+          success: '#51cf66',
+          onSuccess: '#ffffff',
+          warning: '#ffd43b',
+          onWarning: '#000000'
+        }
+      }
     }
+  }
 });
+
+export default connector;
 
 // Функция для получения баланса
 export const getBalance = async (address) => {
@@ -24,7 +47,7 @@ export const getBalance = async (address) => {
 
 // Функция для отправки транзакции
 export const sendTransaction = async (toAddress, amount, comment = '') => {
-  if (!tonConnect) {
+  if (!connector) {
     throw new Error('TON Connect not initialized');
   }
 
@@ -45,7 +68,7 @@ export const sendTransaction = async (toAddress, amount, comment = '') => {
     };
 
     console.log('Sending transaction:', transaction);
-    const result = await tonConnect.sendTransaction(transaction);
+    const result = await connector.sendTransaction(transaction);
     console.log('Transaction result:', result);
     return result;
   } catch (error) {
