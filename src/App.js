@@ -7,7 +7,6 @@ import {
   User, 
   Wallet, 
   Plus, 
-  Minus,
   X,
   Check,
   AlertCircle,
