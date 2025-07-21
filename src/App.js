@@ -119,10 +119,16 @@ const Badge = ({ children, variant = 'default', className = '' }) => {
 export default function App() {
   // Состояние
   const [user, setUser] = useState(null);
-  const [balance, setBalance] = useState(0);
+  const [balance, setBalance] = useState(() => {
+    const saved = localStorage.getItem('ton_market_balance');
+    return saved ? parseFloat(saved) : 0;
+  });
   const [selectedItem, setSelectedItem] = useState(null);
   const [activeTab, setActiveTab] = useState('market');
-  const [purchasedItems, setPurchasedItems] = useState([]);
+  const [purchasedItems, setPurchasedItems] = useState(() => {
+    const saved = localStorage.getItem('ton_market_purchased');
+    return saved ? JSON.parse(saved) : [];
+  });
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
   const [message, setMessage] = useState('');
@@ -132,6 +138,17 @@ export default function App() {
   const [tonConnectUI] = useTonConnectUI();
   const walletInfo = tonConnectUI.account;
   const isConnected = !!walletInfo;
+
+  // Функции для сохранения данных
+  const saveBalance = (newBalance) => {
+    setBalance(newBalance);
+    localStorage.setItem('ton_market_balance', newBalance.toString());
+  };
+
+  const savePurchasedItems = (items) => {
+    setPurchasedItems(items);
+    localStorage.setItem('ton_market_purchased', JSON.stringify(items));
+  };
 
   // Инициализация Telegram WebApp
   useEffect(() => {
@@ -167,7 +184,10 @@ export default function App() {
           });
         }
         
-        setBalance(5.0); // Начальный баланс
+        // Устанавливаем начальный баланс только если его нет в localStorage
+        if (!localStorage.getItem('ton_market_balance')) {
+          saveBalance(5.0);
+        }
         setIsLoading(false);
       } else {
         // Fallback для тестирования
@@ -178,7 +198,10 @@ export default function App() {
           photoUrl: null,
           isPremium: false
         });
-        setBalance(5.0);
+        // Устанавливаем начальный баланс только если его нет в localStorage
+        if (!localStorage.getItem('ton_market_balance')) {
+          saveBalance(5.0);
+        }
         setIsLoading(false);
       }
     };
@@ -213,13 +236,16 @@ export default function App() {
       return;
     }
 
-    setBalance(prev => prev - selectedItem.price);
-    setPurchasedItems(prev => [{
+    const newBalance = balance - selectedItem.price;
+    saveBalance(newBalance);
+    
+    const newPurchasedItem = {
       ...selectedItem,
       id: Date.now(),
       purchaseDate: new Date().toLocaleDateString(),
       purchaseTime: new Date().toLocaleTimeString()
-    }, ...prev]);
+    };
+    savePurchasedItems([newPurchasedItem, ...purchasedItems]);
     
     setMessage({ type: 'success', text: `Покупка совершена! ${selectedItem.name} добавлен в ваш кошелек.` });
     setSelectedItem(null);
@@ -233,7 +259,8 @@ export default function App() {
     }
 
     const amount = parseFloat(depositAmount);
-    setBalance(prev => prev + amount);
+    const newBalance = balance + amount;
+    saveBalance(newBalance);
     setMessage({ type: 'success', text: `Баланс пополнен на ${amount} TON!` });
     setShowDepositModal(false);
     setDepositAmount('');
