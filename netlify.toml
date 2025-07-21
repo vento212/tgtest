@@ -14,19 +14,7 @@
   to = "/index.html"
   status = 200
 
-[build.environment]
-  NODE_VERSION = "18.17.0"
-  NODE_OPTIONS = "--max_old_space_size=4096"
-  GENERATE_SOURCEMAP = "false"
-  REACT_APP_BACKEND_URL = "https://your-railway-url.up.railway.app"
-  REACT_APP_MONGODB_ATLAS_URI = "mongodb+srv://tonnelque:cdcdcdcd@cluster0.mgg7dgs.mongodb.net/tgmarket?retryWrites=true&w=majority"
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-
 # Переменные окружения для продакшена
 [context.production.environment]
-  REACT_APP_BACKEND_URL = "https://your-railway-url.up.railway.app"
+  REACT_APP_BACKEND_URL = "https://tgtest-production-2ba1.up.railway.app"
   REACT_APP_MONGODB_ATLAS_URI = "mongodb+srv://tonnelque:cdcdcdcd@cluster0.mgg7dgs.mongodb.net/tgmarket?retryWrites=true&w=majority" 
