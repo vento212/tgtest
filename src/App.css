@@ -361,64 +361,72 @@
   transform: none;
 }
 
-/* Заказы */
-.orders-section h2 {
+/* Купленные товары */
+.purchased-section h2 {
   margin-bottom: 1rem;
   font-size: 1.5rem;
   font-weight: 600;
 }
 
-.no-orders {
+.no-items {
   text-align: center;
   color: rgba(255, 255, 255, 0.7);
   padding: 2rem;
 }
 
-.orders-list {
+.no-items p {
+  margin-bottom: 0.5rem;
+}
+
+.purchased-items {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.order-item {
+.purchased-item {
   background: rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   padding: 1rem;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.order-info {
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  gap: 1rem;
 }
 
-.order-name {
+.purchased-item .item-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.purchased-item .item-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.purchased-item .item-info {
+  flex: 1;
+}
+
+.purchased-item .item-name {
   font-weight: 600;
   margin-bottom: 0.25rem;
 }
 
-.order-price {
+.purchased-item .item-price {
   color: #00a8ff;
   font-weight: 700;
+  margin-bottom: 0.25rem;
 }
 
-.order-status {
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
+.purchase-date {
   font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.order-status.paid {
-  background: rgba(40, 167, 69, 0.2);
-  color: #51cf66;
-}
-
-.order-status.pending {
-  background: rgba(255, 193, 7, 0.2);
-  color: #ffc107;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 /* Профиль */

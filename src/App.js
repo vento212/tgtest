@@ -43,6 +43,7 @@ export default function App() {
   const [message, setMessage] = useState('');
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
+  const [purchasedItems, setPurchasedItems] = useState([]);
 
   // TON Connect
   const [tonConnectUI] = useTonConnectUI();
@@ -107,7 +108,18 @@ export default function App() {
       return;
     }
 
+    // Списываем средства
     setUserBalance(prev => prev - selectedItem.price);
+    
+    // Добавляем товар в список купленных
+    const purchasedItem = {
+      ...selectedItem,
+      id: Date.now(), // Уникальный ID
+      purchaseDate: new Date().toLocaleDateString(),
+      purchaseTime: new Date().toLocaleTimeString()
+    };
+    
+    setPurchasedItems(prev => [purchasedItem, ...prev]);
     setMessage(`✅ Покупка совершена! ${selectedItem.name} добавлен в ваш кошелек.`);
   };
 
@@ -156,7 +168,7 @@ export default function App() {
       </div>
       {walletInfo?.address && (
         <div className="wallet-address">
-          {walletInfo.address.slice(0, 8)}...{walletInfo.address.slice(-8)}
+          {walletInfo.address.slice(0, 6)}...{walletInfo.address.slice(-4)}
         </div>
       )}
     </div>
@@ -201,6 +213,36 @@ export default function App() {
     </div>
   );
 
+  // Рендер купленных товаров
+  const renderPurchased = () => (
+    <div className="purchased-section">
+      <h2>Купленные товары</h2>
+      {purchasedItems.length === 0 ? (
+        <div className="no-items">
+          <p>У вас пока нет купленных товаров</p>
+          <p>Перейдите в Market, чтобы купить NFT</p>
+        </div>
+      ) : (
+        <div className="purchased-items">
+          {purchasedItems.map((item) => (
+            <div key={item.id} className="purchased-item">
+              <div className="item-image">
+                <img src={item.image} alt={item.name} />
+              </div>
+              <div className="item-info">
+                <div className="item-name">{item.name}</div>
+                <div className="item-price">{item.price} TON</div>
+                <div className="purchase-date">
+                  Куплен: {item.purchaseDate} в {item.purchaseTime}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
   // Рендер профиля
   const renderProfile = () => (
     <div className="profile-section">
@@ -224,6 +266,8 @@ export default function App() {
     switch (activeTab) {
       case 'market':
         return renderMarket();
+      case 'purchased':
+        return renderPurchased();
       case 'profile':
         return renderProfile();
       default:
@@ -240,6 +284,13 @@ export default function App() {
       >
         <span className="nav-icon">🛒</span>
         <span className="nav-label">Market</span>
+      </button>
+      <button
+        className={`nav-tab ${activeTab === 'purchased' ? 'active' : ''}`}
+        onClick={() => setActiveTab('purchased')}
+      >
+        <span className="nav-icon">📦</span>
+        <span className="nav-label">Купленные</span>
       </button>
       <button
         className={`nav-tab ${activeTab === 'profile' ? 'active' : ''}`}
