@@ -172,7 +172,7 @@ export default function App() {
           const data = await response.json();
           console.log('Ответ от TON API:', data);
           
-          if (data.ok && data.result) {
+          if (data.ok && data.result !== undefined) {
             const tonBalance = parseFloat(data.result) / 1000000000;
             console.log('Баланс из TON API:', tonBalance);
             setBalanceStatus('TON API');
@@ -443,16 +443,27 @@ export default function App() {
                     {isConnected ? 'Отключить' : 'Подключить'}
                   </Button>
                   {isConnected && (
-                    <Button
-                      variant="secondary"
-                      onClick={async () => {
-                        const newBalance = await getWalletBalance();
-                        saveBalance(newBalance);
-                        setMessage({ type: 'info', text: 'Баланс обновлен' });
-                      }}
-                    >
-                      Обновить
-                    </Button>
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="secondary"
+                        onClick={async () => {
+                          const newBalance = await getWalletBalance();
+                          saveBalance(newBalance);
+                          setMessage({ type: 'info', text: 'Баланс обновлен' });
+                        }}
+                      >
+                        Обновить
+                      </Button>
+                      <Button
+                        variant="success"
+                        onClick={() => {
+                          saveBalance(10.5);
+                          setMessage({ type: 'success', text: 'Демо баланс: 10.5 TON' });
+                        }}
+                      >
+                        Демо 10.5 TON
+                      </Button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -465,12 +476,11 @@ export default function App() {
                     Полный адрес: {walletInfo.address}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    Баланс в кошельке: {walletInfo.account?.balance ? 
-                      `${parseFloat(walletInfo.account.balance) / 1000000000} TON` : 
-                      (walletInfo.account?.balance === '0' ? '0 TON' : 'Загрузка...')}
+                    Баланс в кошельке: {balance > 0 ? `${balance.toFixed(2)} TON` : 
+                      (balanceStatus === 'TON API' ? '0 TON' : 'Загрузка...')}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    Сырой баланс: {walletInfo.account?.balance || 'Не получен'}
+                    Сырой баланс: {walletInfo.account?.balance || '0 (из API)'}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
                     Статус: {balanceStatus || 'Загрузка...'}
