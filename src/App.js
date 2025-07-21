@@ -41,7 +41,6 @@ export default function App() {
   const [selectedItem, setSelectedItem] = useState(marketItems[0]);
   const [activeTab, setActiveTab] = useState('market');
   const [message, setMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
 
@@ -193,7 +192,6 @@ export default function App() {
             <button 
               className="buy-btn"
               onClick={buyNFT}
-              disabled={isLoading}
             >
               Купить за {selectedItem.price} TON
             </button>
@@ -292,8 +290,8 @@ export default function App() {
               onChange={(e) => setDepositAmount(e.target.value)}
             />
             <div className="modal-actions">
-              <button onClick={handleDeposit} disabled={isLoading}>
-                {isLoading ? 'Пополнение...' : 'Пополнить'}
+              <button onClick={handleDeposit}>
+                Пополнить
               </button>
               <button onClick={() => setShowDepositModal(false)}>
                 Отмена
