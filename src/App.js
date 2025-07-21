@@ -44,6 +44,7 @@ export default function App() {
   const [showDepositModal, setShowDepositModal] = useState(false);
   const [depositAmount, setDepositAmount] = useState('');
   const [purchasedItems, setPurchasedItems] = useState([]);
+  const [showDevNotice, setShowDevNotice] = useState(true);
 
   // TON Connect
   const [tonConnectUI] = useTonConnectUI();
@@ -313,6 +314,14 @@ export default function App() {
           </div>
         </div>
       </div>
+
+      {/* Уведомление о разработке */}
+      {showDevNotice && (
+        <div className="dev-notice">
+          <span>⚠️ Приложение в разработке</span>
+          <button onClick={() => setShowDevNotice(false)}>✕</button>
+        </div>
+      )}
 
       {/* Сообщения */}
       {message && (
