@@ -1,7 +1,7 @@
 const TelegramBot = require('node-telegram-bot-api');
 
 // Замените на ваш токен бота
-const token = 'YOUR_BOT_TOKEN_HERE';
+const token = '7613132560:AAESBJarPQUMUAmwnLPx0aUIfadj-UWSbe8';
 const webAppUrl = 'https://fancy-melomakarona-ceb24e.netlify.app';
 
 const bot = new TelegramBot(token, { polling: true });
