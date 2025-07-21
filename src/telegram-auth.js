@@ -1,16 +1,42 @@
 // Утилиты для работы с Telegram WebApp
 class TelegramAuth {
     constructor() {
+        console.log('🔍 TelegramAuth constructor - проверяем Telegram WebApp');
+        console.log('🔍 window.Telegram:', !!window.Telegram);
+        console.log('🔍 window.Telegram?.WebApp:', !!window.Telegram?.WebApp);
+        
         this.tg = window.Telegram?.WebApp;
         this.user = null;
         this.initData = null;
         this.initDataUnsafe = null;
+        
+        if (this.tg) {
+            console.log('✅ Telegram WebApp найден в конструкторе');
+        } else {
+            console.warn('⚠️ Telegram WebApp не найден в конструкторе');
+        }
     }
 
     // Инициализация Telegram WebApp
     init() {
+        console.log('🔍 init() - начинаем инициализацию');
+        console.log('🔍 this.tg:', !!this.tg);
+        console.log('🔍 window.Telegram:', !!window.Telegram);
+        console.log('🔍 window.Telegram?.WebApp:', !!window.Telegram?.WebApp);
+        
+        // Попробуем переинициализировать, если tg не найден
+        if (!this.tg && window.Telegram?.WebApp) {
+            console.log('🔧 Переинициализируем Telegram WebApp');
+            this.tg = window.Telegram.WebApp;
+        }
+        
         if (!this.tg) {
             console.warn('⚠️ Telegram WebApp не доступен');
+            console.log('🔍 Доступные глобальные объекты:', {
+                window: !!window,
+                Telegram: !!window.Telegram,
+                WebApp: !!window.Telegram?.WebApp
+            });
             return false;
         }
 
