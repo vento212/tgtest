@@ -105,7 +105,18 @@ export default function App() {
         setMessage('Приложение готово');
       } else {
         debugText += '❌ Telegram WebApp недоступен\n';
-        setMessage('❌ Это приложение работает только в Telegram');
+        debugText += '💡 Используем демо режим\n';
+        
+        // Демо режим - имитируем данные пользователя
+        const demoUsers = ['Алексей', 'Мария', 'Дмитрий', 'Анна', 'Сергей'];
+        const randomName = demoUsers[Math.floor(Math.random() * demoUsers.length)];
+        setUserName(randomName);
+        setUserBalance(5.0); // Начальный баланс
+        
+        debugText += `👤 Демо пользователь: ${randomName}\n`;
+        debugText += `💰 Начальный баланс: 5.0 TON\n`;
+        
+        setMessage('✅ Демо режим активирован');
       }
       
       setDebugInfo(debugText);
