@@ -133,6 +133,8 @@ app.post('/api/user/connect-wallet', authenticateTelegram, async (req, res) => {
         }
 
         // Валидация адреса TON кошелька (поддержка новых форматов)
+        console.log('🔍 Валидация адреса кошелька:', walletAddress);
+        
         const validFormats = [
             walletAddress.startsWith('EQ'), // Старый формат
             walletAddress.startsWith('UQ'), // Старый формат
@@ -140,9 +142,20 @@ app.post('/api/user/connect-wallet', authenticateTelegram, async (req, res) => {
             walletAddress.match(/^[0-9a-fA-F]{48}$/) // Raw формат
         ];
         
+        console.log('🔍 Результаты валидации:', {
+            startsWithEQ: walletAddress.startsWith('EQ'),
+            startsWithUQ: walletAddress.startsWith('UQ'),
+            startsWith0: walletAddress.startsWith('0:'),
+            rawFormat: walletAddress.match(/^[0-9a-fA-F]{48}$/),
+            isValid: validFormats.some(format => format)
+        });
+        
         if (!validFormats.some(format => format)) {
+            console.log('❌ Адрес кошелька не прошел валидацию:', walletAddress);
             return res.status(400).json({ error: 'Неверный формат адреса TON кошелька' });
         }
+        
+        console.log('✅ Адрес кошелька прошел валидацию:', walletAddress);
 
         await user.connectWallet(walletAddress);
         
