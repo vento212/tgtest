@@ -66,6 +66,8 @@ export default function App() {
 
   // TON Connect
   const [tonConnectUI] = useTonConnectUI();
+  const walletInfo = tonConnectUI.account;
+  const isConnected = !!walletInfo;
 
   // Инициализация приложения
   useEffect(() => {
@@ -436,7 +438,10 @@ export default function App() {
 
   // Рендер информации о пользователе
   const renderUserInfo = () => {
-    if (!userProfile) return null;
+    if (!userProfile && !telegramUser) return null;
+
+    const user = userProfile || telegramUser;
+    if (!user) return null;
 
     return (
       <div className="user-info">
@@ -446,10 +451,10 @@ export default function App() {
           </div>
           <div className="user-details">
             <div className="user-name">
-              {userProfile.firstName} {userProfile.lastName}
+              {user.firstName || user.first_name} {user.lastName || user.last_name}
             </div>
             <div className="user-username">
-              @{userProfile.username}
+              @{user.username || 'user'}
             </div>
           </div>
         </div>
@@ -469,10 +474,10 @@ export default function App() {
       <div className="wallet-info">
         <div className="wallet-status">
           <div className="status-indicator">
-            <span className={`status-dot ${userProfile.isWalletConnected ? 'connected' : 'disconnected'}`}></span>
+            <span className={`status-dot ${isConnected ? 'connected' : 'disconnected'}`}></span>
             TON Wallet
           </div>
-          {userProfile.isWalletConnected ? (
+          {isConnected ? (
             <button 
               className="disconnect-btn"
               onClick={() => tonConnectUI.disconnect()}
@@ -488,9 +493,9 @@ export default function App() {
             </button>
           )}
         </div>
-        {userProfile.walletAddress && (
+        {walletInfo?.address && (
           <div className="wallet-address">
-            {userProfile.walletAddress.slice(0, 8)}...{userProfile.walletAddress.slice(-8)}
+            {walletInfo.address.slice(0, 8)}...{walletInfo.address.slice(-8)}
           </div>
         )}
       </div>
