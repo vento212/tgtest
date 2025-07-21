@@ -66,7 +66,6 @@ export default function App() {
 
   // TON Connect
   const [tonConnectUI] = useTonConnectUI();
-  const walletInfo = tonConnectUI.account;
 
   // Инициализация приложения
   useEffect(() => {
