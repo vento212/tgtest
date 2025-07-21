@@ -156,7 +156,7 @@ export default function App() {
         const balance = await tonConnectUI.wallet?.account?.balance;
         console.log('Сырой баланс из TON Connect API:', balance);
         
-        if (balance && balance !== '0') {
+        if (balance !== undefined && balance !== null) {
           // Конвертируем из наноТОН в ТОН (1 TON = 1,000,000,000 наноТОН)
           const tonBalance = parseFloat(balance) / 1000000000;
           console.log('Конвертированный баланс:', tonBalance);
@@ -255,11 +255,13 @@ export default function App() {
         console.log('Адрес кошелька:', wallet.account?.address);
         console.log('Баланс кошелька:', wallet.account?.balance);
         
-        // Загружаем баланс при подключении кошелька
-        const walletBalance = await getWalletBalance();
-        console.log('Полученный баланс:', walletBalance);
-        saveBalance(walletBalance);
-        setMessage({ type: 'success', text: 'Кошелек подключен!' });
+        // Добавляем задержку для полной инициализации кошелька
+        setTimeout(async () => {
+          const walletBalance = await getWalletBalance();
+          console.log('Полученный баланс:', walletBalance);
+          saveBalance(walletBalance);
+          setMessage({ type: 'success', text: 'Кошелек подключен!' });
+        }, 1000);
       } else {
         console.log('Кошелек отключен');
         // Сбрасываем баланс при отключении кошелька
@@ -270,6 +272,18 @@ export default function App() {
 
     return () => unsubscribe();
   }, [tonConnectUI]);
+
+  // Автоматическое обновление баланса каждые 30 секунд
+  useEffect(() => {
+    if (isConnected) {
+      const interval = setInterval(async () => {
+        const walletBalance = await getWalletBalance();
+        saveBalance(walletBalance);
+      }, 30000); // 30 секунд
+
+      return () => clearInterval(interval);
+    }
+  }, [isConnected]);
 
   // Покупка NFT
   const buyNFT = () => {
