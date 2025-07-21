@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTonConnectUI } from '@tonconnect/ui-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import LoginPage from './LoginPage';
 import { 
   ShoppingCart, 
   Package, 
@@ -118,6 +119,7 @@ const Badge = ({ children, variant = 'default', className = '' }) => {
 
 export default function App() {
   // Состояние
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState(null);
   const [balance, setBalance] = useState(0);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -136,6 +138,12 @@ export default function App() {
   const [tonConnectUI] = useTonConnectUI();
   const walletInfo = tonConnectUI.account;
   const isConnected = !!walletInfo;
+
+  // Функция для обработки успешного входа
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+    localStorage.setItem('ton_market_authenticated', 'true');
+  };
 
   // Функции для сохранения данных
   const saveBalance = (newBalance) => {
@@ -200,6 +208,14 @@ export default function App() {
     }
     return 0;
   };
+
+  // Проверка авторизации при загрузке
+  useEffect(() => {
+    const savedAuth = localStorage.getItem('ton_market_authenticated');
+    if (savedAuth === 'true') {
+      setIsAuthenticated(true);
+    }
+  }, []);
 
   // Инициализация Telegram WebApp
   useEffect(() => {
@@ -336,6 +352,11 @@ export default function App() {
       return () => clearTimeout(timer);
     }
   }, [message]);
+
+  // Если пользователь не авторизован, показываем страницу входа
+  if (!isAuthenticated) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
 
   if (isLoading) {
     return (
