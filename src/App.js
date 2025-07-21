@@ -174,14 +174,8 @@ export default function App() {
             isPremium: telegramUser.is_premium
           });
         } else {
-          // Демо пользователь
-          setUser({
-            id: 123456789,
-            name: 'Демо Пользователь',
-            username: 'demo_user',
-            photoUrl: null,
-            isPremium: false
-          });
+          // Если нет данных пользователя Telegram, показываем ошибку
+          setMessage({ type: 'error', text: 'Ошибка: Данные пользователя Telegram не найдены. Откройте приложение через Telegram бота.' });
         }
         
         // Устанавливаем начальный баланс только если его нет в localStorage
@@ -190,18 +184,8 @@ export default function App() {
         }
         setIsLoading(false);
       } else {
-        // Fallback для тестирования
-        setUser({
-          id: 123456789,
-          name: 'Тестовый Пользователь',
-          username: 'test_user',
-          photoUrl: null,
-          isPremium: false
-        });
-        // Устанавливаем начальный баланс только если его нет в localStorage
-        if (!localStorage.getItem('ton_market_balance')) {
-          saveBalance(5.0);
-        }
+        // Если Telegram WebApp недоступен, показываем ошибку
+        setMessage({ type: 'error', text: 'Ошибка: Telegram WebApp недоступен. Откройте приложение через Telegram бота.' });
         setIsLoading(false);
       }
     };
@@ -337,7 +321,22 @@ export default function App() {
 
       {/* Main Content */}
       <main className="px-4 py-6">
-        {activeTab === 'market' && (
+        {!user ? (
+          <Card>
+            <div className="text-center py-8">
+              <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+              <h2 className="text-xl font-bold mb-2">Доступ запрещен</h2>
+              <p className="text-gray-400 mb-4">
+                Для использования приложения необходимо открыть его через Telegram бота
+              </p>
+              <Button onClick={() => window.location.reload()}>
+                Обновить страницу
+              </Button>
+            </div>
+          </Card>
+        ) : (
+          <>
+            {activeTab === 'market' && (
           <div className="space-y-6">
             {/* Balance Card */}
             <Card>
@@ -535,6 +534,8 @@ export default function App() {
               </div>
             </Card>
           </div>
+        )}
+          </>
         )}
       </main>
 
