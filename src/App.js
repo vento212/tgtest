@@ -153,16 +153,23 @@ export default function App() {
       try {
         // Получаем баланс через TON Connect API
         const balance = await tonConnectUI.wallet?.account?.balance;
-        if (balance) {
+        console.log('Сырой баланс из API:', balance);
+        
+        if (balance && balance !== '0') {
           // Конвертируем из наноТОН в ТОН (1 TON = 1,000,000,000 наноТОН)
-          return parseFloat(balance) / 1000000000;
+          const tonBalance = parseFloat(balance) / 1000000000;
+          console.log('Конвертированный баланс:', tonBalance);
+          return tonBalance;
         }
         
-        // Fallback к localStorage если API не работает
+        // Если баланс 0 или не получен, используем localStorage
         const savedBalance = localStorage.getItem('ton_market_balance');
         if (savedBalance) {
+          console.log('Используем сохраненный баланс:', savedBalance);
           return parseFloat(savedBalance);
         }
+        
+        console.log('Баланс не найден, возвращаем 0');
         return 0;
       } catch (error) {
         console.error('Ошибка получения баланса:', error);
@@ -406,12 +413,26 @@ export default function App() {
                     </p>
                   </div>
                 </div>
-                <Button
-                  variant={isConnected ? 'danger' : 'primary'}
-                  onClick={() => isConnected ? tonConnectUI.disconnect() : tonConnectUI.connectWallet()}
-                >
-                  {isConnected ? 'Отключить' : 'Подключить'}
-                </Button>
+                <div className="flex space-x-2">
+                  <Button
+                    variant={isConnected ? 'danger' : 'primary'}
+                    onClick={() => isConnected ? tonConnectUI.disconnect() : tonConnectUI.connectWallet()}
+                  >
+                    {isConnected ? 'Отключить' : 'Подключить'}
+                  </Button>
+                  {isConnected && (
+                    <Button
+                      variant="secondary"
+                      onClick={async () => {
+                        const newBalance = await getWalletBalance();
+                        saveBalance(newBalance);
+                        setMessage({ type: 'info', text: 'Баланс обновлен' });
+                      }}
+                    >
+                      Обновить
+                    </Button>
+                  )}
+                </div>
               </div>
               {walletInfo?.address && (
                 <div className="mt-2">
@@ -422,7 +443,12 @@ export default function App() {
                     Полный адрес: {walletInfo.address}
                   </p>
                   <p className="text-xs text-gray-500 mt-1">
-                    Баланс в кошельке: {walletInfo.account?.balance ? `${parseFloat(walletInfo.account.balance) / 1000000000} TON` : 'Загрузка...'}
+                    Баланс в кошельке: {walletInfo.account?.balance ? 
+                      `${parseFloat(walletInfo.account.balance) / 1000000000} TON` : 
+                      (walletInfo.account?.balance === '0' ? '0 TON' : 'Загрузка...')}
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Сырой баланс: {walletInfo.account?.balance || 'Не получен'}
                   </p>
                 </div>
               )}
