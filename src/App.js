@@ -105,6 +105,8 @@ export default function App() {
   // Инициализация Telegram WebApp
   const initTelegram = async () => {
     try {
+      console.log('🔍 Проверяем Telegram WebApp...');
+      
       // Проверяем наличие Telegram WebApp API
       if (!window.Telegram || !window.Telegram.WebApp) {
         console.warn('❌ Telegram WebApp API недоступен');
@@ -113,13 +115,43 @@ export default function App() {
 
       // Инициализируем Telegram WebApp
       const webApp = window.Telegram.WebApp;
-      webApp.ready();
-      webApp.expand();
-
-      // Получаем данные пользователя
-      const user = webApp.initDataUnsafe?.user;
+      console.log('🔍 WebApp объект:', webApp);
+      
+      // Пробуем разные способы получения данных пользователя
+      let user = null;
+      
+      // Способ 1: initDataUnsafe.user
+      if (webApp.initDataUnsafe?.user) {
+        user = webApp.initDataUnsafe.user;
+        console.log('✅ Пользователь найден в initDataUnsafe.user');
+      }
+      // Способ 2: initDataUnsafe.user_info
+      else if (webApp.initDataUnsafe?.user_info) {
+        user = webApp.initDataUnsafe.user_info;
+        console.log('✅ Пользователь найден в initDataUnsafe.user_info');
+      }
+      // Способ 3: Парсим initData
+      else if (webApp.initData) {
+        try {
+          const initData = new URLSearchParams(webApp.initData);
+          const userData = initData.get('user');
+          if (userData) {
+            user = JSON.parse(decodeURIComponent(userData));
+            console.log('✅ Пользователь найден в initData');
+          }
+        } catch (e) {
+          console.warn('⚠️ Не удалось распарсить initData:', e);
+        }
+      }
+      
       if (!user) {
         console.warn('❌ Данные пользователя Telegram недоступны');
+        console.log('🔍 Доступные данные:', {
+          initData: webApp.initData,
+          initDataUnsafe: webApp.initDataUnsafe,
+          platform: webApp.platform,
+          version: webApp.version
+        });
         return false;
       }
 
@@ -481,10 +513,13 @@ export default function App() {
 
   // Рендер информации о пользователе
   const renderUserInfo = () => {
-    if (!userProfile && !telegramUser) return null;
-
-    const user = userProfile || telegramUser;
+    // Приоритет: telegramUser > userProfile
+    const user = telegramUser || userProfile;
     if (!user) return null;
+
+    const firstName = user.firstName || user.first_name || 'User';
+    const lastName = user.lastName || user.last_name || '';
+    const username = user.username || 'user';
 
     return (
       <div className="user-info">
@@ -494,10 +529,10 @@ export default function App() {
           </div>
           <div className="user-details">
             <div className="user-name">
-              {user.firstName || user.first_name} {user.lastName || user.last_name}
+              {firstName} {lastName}
             </div>
             <div className="user-username">
-              @{user.username || 'user'}
+              @{username}
             </div>
           </div>
         </div>
