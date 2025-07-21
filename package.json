@@ -1,53 +1,13 @@
 {
-  "name": "ton-nft-marketplace",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@heroicons/react": "^2.1.1",
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "@ton/crypto": "^3.2.0",
-    "@ton/ton": "^13.9.0",
-    "@tonconnect/sdk": "^2.0.0",
-    "@tonconnect/ui-react": "^2.0.0",
-    "autoprefixer": "^10.4.17",
-    "axios": "^1.6.0",
-    "ethers": "^6.0.0",
-    "http-proxy-middleware": "^3.0.5",
-    "postcss": "^8.4.35",
-    "qrcode.react": "^4.2.0",
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "react-scripts": "5.0.1",
-    "tailwindcss": "^3.4.1",
-    "web-vitals": "^2.1.4"
-  },
+  "name": "tg-market-fullstack",
+  "version": "1.0.0",
+  "description": "Fullstack TON marketplace application",
   "scripts": {
-    "start": "HTTPS=true SSL_CRT_FILE=ssl/certificate.crt SSL_KEY_FILE=ssl/private.key HOST=192.168.0.32 craco start",
-    "build": "GENERATE_SOURCEMAP=false NODE_OPTIONS=--max_old_space_size=4096 craco build",
-    "test": "craco test",
-    "eject": "react-scripts eject"
+    "start": "cd backend && npm install && npm start",
+    "build": "cd backend && npm install",
+    "dev": "cd backend && npm run dev"
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
-  "devDependencies": {
-    "@craco/craco": "^7.1.0"
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
